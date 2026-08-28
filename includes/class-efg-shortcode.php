@@ -61,17 +61,7 @@ class EFG_Shortcode {
 			);
 		}
 
-		// This endpoint is public and writes to the options table, so throttle it.
-		// The nonce is not a control here: logged-out visitors all share one nonce
-		// that stays valid for the better part of a day.
-		$throttle_key = 'efg_rl_' . md5( self::client_ip() );
-		if ( get_transient( $throttle_key ) ) {
-			wp_die(
-				esc_html__( 'You just generated a flyer. Wait a few seconds and try again.', 'event-flyer-generator' ),
-				'',
-				array( 'back_link' => true )
-			);
-		}
+		self::throttle_guard();
 
 		// Sanitized inline rather than inside the helper, so the security-relevant
 		// step is visible at the point of use (and statically checkable).
@@ -122,9 +112,52 @@ class EFG_Shortcode {
 			);
 		}
 
-		set_transient( $throttle_key, 1, self::THROTTLE_SECONDS );
+		// Not wp_get_referer(): the form posts to itself, so that hits its own
+		// self-referer check and returns false, landing everyone on the home page.
+		// The form carries its own permalink instead, validated before use.
+		$redirect_base = wp_validate_redirect(
+			esc_url_raw( wp_unslash( $_POST['efg_return'] ?? '' ) ),
+			home_url( '/' )
+		);
 
+		self::stash_and_redirect( $program_name, $footer_line, $events, $redirect_base );
+	}
+
+	/**
+	 * Refuse a second flyer from the same IP too soon after the last one.
+	 *
+	 * These endpoints are public and write to the options table. The nonce is
+	 * not a control here: logged-out visitors all share one nonce that stays
+	 * valid for the better part of a day.
+	 */
+	public static function throttle_guard() {
+		$key = 'efg_rl_' . md5( self::client_ip() );
+
+		if ( get_transient( $key ) ) {
+			wp_die(
+				esc_html__( 'You just generated a flyer. Wait a few seconds and try again.', 'event-flyer-generator' ),
+				'',
+				array( 'back_link' => true )
+			);
+		}
+
+		set_transient( $key, 1, self::THROTTLE_SECONDS );
+	}
+
+	/**
+	 * Stash a flyer payload and redirect to its print view.
+	 *
+	 * Shared by the manual form and the event picker so both go through exactly
+	 * the same token, storage and redirect path.
+	 *
+	 * @param string $program_name  Flyer headline.
+	 * @param string $footer_line   Footer line.
+	 * @param array  $events        Flyer rows.
+	 * @param string $redirect_base Validated URL to return to.
+	 */
+	public static function stash_and_redirect( $program_name, $footer_line, $events, $redirect_base ) {
 		$token = self::generate_token();
+
 		set_transient(
 			'efg_flyer_' . $token,
 			array(
@@ -133,14 +166,6 @@ class EFG_Shortcode {
 				'events'       => $events,
 			),
 			HOUR_IN_SECONDS
-		);
-
-		// Not wp_get_referer(): the form posts to itself, so that hits its own
-		// self-referer check and returns false, landing everyone on the home page.
-		// The form carries its own permalink instead, validated before use.
-		$redirect_base = wp_validate_redirect(
-			esc_url_raw( wp_unslash( $_POST['efg_return'] ?? '' ) ),
-			home_url( '/' )
 		);
 
 		wp_safe_redirect( add_query_arg( 'efg_flyer', $token, $redirect_base ) );

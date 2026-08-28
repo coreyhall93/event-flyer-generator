@@ -32,7 +32,7 @@
 		},
 		{
 			"step": "runPHP",
-			"code": "<?php require_once '/wordpress/wp-load.php'; $existing = get_page_by_path( 'create-your-event-flyer' ); if ( $existing ) { $page_id = $existing->ID; wp_update_post( array( 'ID' => $page_id, 'post_content' => '[event_flyer_form]', 'post_status' => 'publish' ) ); } else { $page_id = wp_insert_post( array( 'post_type' => 'page', 'post_title' => 'Create Your Event Flyer', 'post_name' => 'create-your-event-flyer', 'post_content' => '[event_flyer_form]', 'post_status' => 'publish' ) ); } update_option( 'show_on_front', 'page' ); update_option( 'page_on_front', $page_id );"
+			"code": "<?php require_once '/wordpress/wp-load.php'; require_once '/wordpress/wp-content/plugins/event-flyer-generator/demo/seed.php';"
 		}
 	]
 }

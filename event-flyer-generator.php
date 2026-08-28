@@ -29,7 +29,9 @@ if ( ! defined( 'EFG_VERSION' ) ) {
 	define( 'EFG_VERSION', '1.0.1' );
 }
 
+require_once EFG_PATH . 'includes/class-efg-events.php';
 require_once EFG_PATH . 'includes/class-efg-shortcode.php';
+require_once EFG_PATH . 'includes/class-efg-picker.php';
 require_once EFG_PATH . 'includes/class-efg-print-view.php';
 
 add_action(
@@ -42,7 +44,9 @@ add_action(
 add_action(
 	'plugins_loaded',
 	function () {
+		new EFG_Events();
 		new EFG_Shortcode();
+		new EFG_Picker();
 		new EFG_Print_View();
 	}
 );

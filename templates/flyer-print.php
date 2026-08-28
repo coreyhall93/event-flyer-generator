@@ -135,6 +135,56 @@ $name_parts = explode( ' ', $program_name, 2 );
 		.efg-where .venue { font-weight: 700; font-size: calc(16px * var(--efg-scale)); line-height: 1.4; }
 		.efg-where .address { font-size: calc(15px * var(--efg-scale)); line-height: 1.4; }
 
+		/* ---------------------------------------------------------------
+			Layout per event count. One event and four events are different
+			pieces of design, not one layout with more rows: the default
+			three-column row leaves a single event stranded in white space,
+			and four events need the tightest setting that still reads.
+			The base rules above are the four-event case; each block below
+			opens the design up as there is more room to spend.
+			--------------------------------------------------------------- */
+
+		/* ONE EVENT — a poster. Drop the columns, stack and centre it, and
+			let the event title carry the page. */
+		.efg-count-1 .efg-events { justify-content: center; }
+		.efg-count-1 .efg-event-row {
+			flex-direction: column;
+			align-items: center;
+			text-align: center;
+			gap: calc(26px * var(--efg-scale));
+		}
+		.efg-count-1 .efg-when,
+		.efg-count-1 .efg-where { width: auto; }
+		.efg-count-1 .efg-what { flex-grow: 0; }
+		.efg-count-1 .efg-where { text-align: center; }
+		.efg-count-1 .efg-when .date { font-size: calc(38px * var(--efg-scale)); }
+		.efg-count-1 .efg-when svg { margin-top: calc(18px * var(--efg-scale)); width: calc(72px * var(--efg-scale)); height: calc(72px * var(--efg-scale)); }
+		.efg-count-1 .efg-what .title { font-size: calc(58px * var(--efg-scale)); margin-bottom: calc(18px * var(--efg-scale)); }
+		.efg-count-1 .efg-what .desc { font-size: calc(23px * var(--efg-scale)); max-width: calc(540px * var(--efg-scale)); margin: 0 auto; }
+		.efg-count-1 .efg-where .venue { font-size: calc(22px * var(--efg-scale)); }
+		.efg-count-1 .efg-where .address { font-size: calc(19px * var(--efg-scale)); }
+		.efg-count-1 .efg-where svg { margin-bottom: calc(10px * var(--efg-scale)); width: calc(40px * var(--efg-scale)); height: calc(40px * var(--efg-scale)); }
+
+		/* TWO EVENTS — keep the columns, spend the extra room on type. The side
+			columns get NARROWER, not wider: bigger titles need the middle. */
+		.efg-count-2 .efg-events { justify-content: space-evenly; }
+		.efg-count-2 .efg-event-row { gap: calc(24px * var(--efg-scale)); }
+		.efg-count-2 .efg-when { width: calc(125px * var(--efg-scale)); }
+		.efg-count-2 .efg-when .date { font-size: calc(28px * var(--efg-scale)); }
+		.efg-count-2 .efg-when svg { width: calc(56px * var(--efg-scale)); height: calc(56px * var(--efg-scale)); }
+		.efg-count-2 .efg-what .title { font-size: calc(32px * var(--efg-scale)); }
+		.efg-count-2 .efg-what .desc { font-size: calc(19px * var(--efg-scale)); max-width: none; }
+		.efg-count-2 .efg-where { width: calc(170px * var(--efg-scale)); }
+		.efg-count-2 .efg-where .venue { font-size: calc(17px * var(--efg-scale)); }
+		.efg-count-2 .efg-where .address { font-size: calc(16px * var(--efg-scale)); }
+
+		/* THREE EVENTS — a modest step up from the four-event setting. */
+		.efg-count-3 .efg-when .date { font-size: calc(26px * var(--efg-scale)); }
+		.efg-count-3 .efg-what .title { font-size: calc(30px * var(--efg-scale)); }
+		.efg-count-3 .efg-what .desc { font-size: calc(18px * var(--efg-scale)); }
+
+		/* FOUR EVENTS uses the base rules above: the tightest setting. */
+
 		.efg-footer { flex-shrink: 0; padding: 0 calc(64px * var(--efg-scale)) calc(48px * var(--efg-scale)); text-align: center; }
 		.efg-footer .rule { border-top: 1px solid #000; margin-bottom: calc(20px * var(--efg-scale)); }
 		.efg-footer .line { font-family: 'Oswald', sans-serif; font-weight: 600; font-size: calc(17px * var(--efg-scale)); letter-spacing: 0.08em; text-transform: uppercase; text-wrap: balance; }
@@ -155,11 +205,11 @@ $name_parts = explode( ' ', $program_name, 2 );
 <body>
 
 	<div class="efg-toolbar">
-		<a href="<?php echo esc_url( remove_query_arg( 'efg_flyer' ) ); ?>">&larr; <?php esc_html_e( 'Back to form', 'event-flyer-generator' ); ?></a>
+		<a href="<?php echo esc_url( remove_query_arg( 'efg_flyer' ) ); ?>">&larr; <?php esc_html_e( 'Back', 'event-flyer-generator' ); ?></a>
 		<button type="button" data-efg-print><?php esc_html_e( 'Print / Save as PDF', 'event-flyer-generator' ); ?></button>
 	</div>
 
-	<div class="efg-page">
+	<div class="efg-page efg-count-<?php echo (int) min( count( $events ), 4 ); ?>">
 
 		<div class="efg-header">
 			<h1>
@@ -201,7 +251,9 @@ $name_parts = explode( ' ', $program_name, 2 );
 
 		<div class="efg-footer">
 			<div class="rule"></div>
-			<div class="line"><?php echo esc_html( $footer_line ); ?></div>
+			<?php if ( '' !== trim( $footer_line ) ) : ?>
+				<div class="line"><?php echo esc_html( $footer_line ); ?></div>
+			<?php endif; ?>
 		</div>
 
 	</div>
