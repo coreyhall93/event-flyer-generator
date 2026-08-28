@@ -8,10 +8,18 @@ one-page flyer. Tick up to four events, click a button, print it.
 Built for community programs (meetups, workshops, recurring event series) that
 need a quick, consistent flyer without opening Canva or Figma every time.
 
-**Works with GatherPress.** If [GatherPress](https://wordpress.org/plugins/gatherpress/)
-is active, the plugin reads your existing GatherPress events, so you never
-retype an event you already entered. Without GatherPress it works standalone on
-its own lightweight event type, and you can add events inline.
+**It works on its own.** Install it, activate it, and add your events right in
+the builder. There is nothing else to install and no account to create. This is
+what most people will get, and it is the whole plugin, not a trial version of it.
+
+**It also reads GatherPress, if you already run it.** When
+[GatherPress](https://wordpress.org/plugins/gatherpress/) is active the builder
+lists your existing GatherPress events instead, so you never retype an event you
+already entered, and the plugin's own add-event form steps out of the way
+because GatherPress owns events at that point.
+
+GatherPress is entirely optional. **Installing this plugin will not install
+GatherPress**, will not prompt you to, and does not need it to work.
 
 ## Try it live
 
@@ -24,7 +32,8 @@ This is the plugin on its own.
 
 **2. [With GatherPress](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/coreyhall93/event-flyer-generator/master/blueprint.json)**
 — GatherPress installed with six sample events. The builder reads them, so you
-never retype an event you already have.
+never retype an event you already have. The demo's Playground blueprint is what
+installs GatherPress here; the plugin never installs it for you.
 
 Both run the exact code on this repository's `master` branch, so what you try
 there is what you get when you install it.
@@ -55,8 +64,8 @@ there is what you get when you install it.
    the ZIP.
 3. Activate **Event Flyer Generator**. A **Flyer Builder** page is created for
    you, and a notice links straight to it.
-4. Add some events. With GatherPress active it uses your GatherPress events
-   automatically; otherwise add them from the builder page itself.
+4. Add some events on the builder page. If you happen to have GatherPress
+   active, it lists your GatherPress events instead and you can skip this step.
 
 ## Requirements
 
