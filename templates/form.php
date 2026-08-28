@@ -9,12 +9,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$icon_options = array(
-	'tip'       => __( 'Idea / lightbulb', 'event-flyer-generator' ),
-	'people'    => __( 'People / gathering', 'event-flyer-generator' ),
-	'megaphone' => __( 'Megaphone / announcement', 'event-flyer-generator' ),
-	'pin'       => __( 'Location pin', 'event-flyer-generator' ),
-);
 ?>
 <div class="efg-wrap">
 	<form method="post" class="efg-form">
@@ -50,13 +44,20 @@ $icon_options = array(
 							<label for="efg-time-<?php echo esc_attr( $i ); ?>"><?php esc_html_e( 'Time', 'event-flyer-generator' ); ?></label>
 							<input type="text" id="efg-time-<?php echo esc_attr( $i ); ?>" name="event_time[]" placeholder="7PM" />
 						</div>
-						<div class="efg-field">
-							<label for="efg-icon-<?php echo esc_attr( $i ); ?>"><?php esc_html_e( 'Icon', 'event-flyer-generator' ); ?></label>
-							<select id="efg-icon-<?php echo esc_attr( $i ); ?>" name="event_icon[]">
-								<?php foreach ( $icon_options as $key => $label ) : ?>
-									<option value="<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $label ); ?></option>
-								<?php endforeach; ?>
-							</select>
+					</div>
+
+					<div class="efg-field">
+						<span class="efg-label"><?php esc_html_e( 'Icon', 'event-flyer-generator' ); ?></span>
+						<div class="efg-icon-grid" role="radiogroup" aria-label="<?php esc_attr_e( 'Event icon', 'event-flyer-generator' ); ?>">
+							<?php foreach ( EFG_Icons::all() as $efg_slug => $efg_icon ) : ?>
+								<label class="efg-icon-choice" title="<?php echo esc_attr( $efg_icon['label'] ); ?>">
+									<input type="radio" name="event_icon[<?php echo esc_attr( $i ); ?>]" value="<?php echo esc_attr( $efg_slug ); ?>" <?php checked( EFG_Icons::FALLBACK, $efg_slug ); ?> />
+									<span class="efg-icon-swatch">
+										<?php echo EFG_Icons::svg( $efg_slug, 22 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- EFG_Icons::svg() escapes its own attributes. ?>
+										<span class="screen-reader-text"><?php echo esc_html( $efg_icon['label'] ); ?></span>
+									</span>
+								</label>
+							<?php endforeach; ?>
 						</div>
 					</div>
 

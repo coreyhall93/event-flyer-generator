@@ -10,15 +10,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$icon_paths = array(
-	'tip'       => 'M12 15.8c-3.7 0-6.8-3-6.8-6.8s3-6.8 6.8-6.8c3.7 0 6.8 3 6.8 6.8s-3.1 6.8-6.8 6.8zm0-12C9.1 3.8 6.8 6.1 6.8 9s2.4 5.2 5.2 5.2c2.9 0 5.2-2.4 5.2-5.2S14.9 3.8 12 3.8zM8 17.5h8V19H8zM10 20.5h4V22h-4z',
-	'people'    => 'M15.5 9.5a1 1 0 100-2 1 1 0 000 2zm0 1.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5zm-2.25 6v-2a2.75 2.75 0 00-2.75-2.75h-4A2.75 2.75 0 003.75 15v2h1.5v-2c0-.69.56-1.25 1.25-1.25h4c.69 0 1.25.56 1.25 1.25v2h1.5zm7-2v2h-1.5v-2c0-.69-.56-1.25-1.25-1.25H15v-1.5h2.5A2.75 2.75 0 0120.25 15zM9.5 8.5a1 1 0 11-2 0 1 1 0 012 0zm1.5 0a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z',
-	'megaphone' => 'M6.863 13.644L5 13.25h-.5a.5.5 0 01-.5-.5v-3a.5.5 0 01.5-.5H5L18 6.5h2V16h-2l-3.854-.815.026.008a3.75 3.75 0 01-7.31-1.549zm1.477.313a2.251 2.251 0 004.356.921l-4.356-.921zm-2.84-3.28L18.157 8h.343v6.5h-.343L5.5 11.823v-1.146z',
-	'pin'       => 'm21.5 9.1-6.6-6.6-4.2 5.6c-1.2-.1-2.4.1-3.6.7-.1 0-.1.1-.2.1-.5.3-.9.6-1.2.9l3.7 3.7-5.7 5.7v1.1h1.1l5.7-5.7 3.7 3.7c.4-.4.7-.8.9-1.2.1-.1.1-.2.2-.3.6-1.1.8-2.4.6-3.6l5.6-4.1zm-7.3 3.5.1.9c.1.9 0 1.8-.4 2.6l-6-6c.8-.4 1.7-.5 2.6-.4l.9.1L15 4.9 19.1 9l-4.9 3.6z',
-);
-
-$has_fill_rule = array( 'people', 'megaphone' );
-
 $program_name = isset( $data['program_name'] ) ? $data['program_name'] : '';
 $footer_line  = isset( $data['footer_line'] ) ? $data['footer_line'] : '';
 $events       = isset( $data['events'] ) ? (array) $data['events'] : array();
@@ -220,15 +211,10 @@ $name_parts = explode( ' ', $program_name, 2 );
 
 		<div class="efg-events">
 			<?php foreach ( $events as $event ) : ?>
-				<?php
-				$icon_key  = isset( $icon_paths[ $event['icon'] ] ) ? $event['icon'] : 'tip';
-				$icon_path = $icon_paths[ $icon_key ];
-				$fill_rule = in_array( $icon_key, $has_fill_rule, true ) ? ' fill-rule="evenodd"' : '';
-				?>
 				<div class="efg-event-row">
 					<div class="efg-when">
 						<div class="date"><?php echo esc_html( $event['date'] ); ?><br><?php echo esc_html( $event['time'] ); ?></div>
-						<svg width="46" height="46" viewBox="0 0 24 24" fill="#000"><path<?php echo $fill_rule; /* phpcs:ignore -- fixed safe attribute string, not user input */ ?> d="<?php echo esc_attr( $icon_path ); ?>"/></svg>
+						<?php echo EFG_Icons::svg( $event['icon'], 46 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- EFG_Icons::svg() escapes its own attributes. ?>
 					</div>
 					<div class="efg-what">
 						<div class="title"><?php echo esc_html( $event['title'] ); ?></div>
@@ -237,7 +223,7 @@ $name_parts = explode( ' ', $program_name, 2 );
 						<?php endif; ?>
 					</div>
 					<div class="efg-where">
-						<svg width="30" height="30" viewBox="0 0 24 24" fill="#000"><path d="<?php echo esc_attr( $icon_paths['pin'] ); ?>"/></svg>
+						<?php echo EFG_Icons::svg( 'pin', 30 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- EFG_Icons::svg() escapes its own attributes. ?>
 						<?php if ( $event['venue'] ) : ?>
 							<div class="venue"><?php echo esc_html( strtoupper( $event['venue'] ) ); ?></div>
 						<?php endif; ?>

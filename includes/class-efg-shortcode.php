@@ -100,7 +100,7 @@ class EFG_Shortcode {
 				'description' => self::clean( $fields['description'][ $i ] ?? '', true ),
 				'venue'       => self::clean( $fields['venue'][ $i ] ?? '' ),
 				'address'     => self::clean( $fields['address'][ $i ] ?? '' ),
-				'icon'        => sanitize_key( (string) ( $fields['icon'][ $i ] ?? 'tip' ) ),
+				'icon'        => self::clean_icon( $fields['icon'][ $i ] ?? '' ),
 			);
 		}
 
@@ -190,6 +190,18 @@ class EFG_Shortcode {
 	 */
 	public static function generate_token() {
 		return bin2hex( random_bytes( 16 ) );
+	}
+
+	/**
+	 * Resolve a submitted icon slug to one we actually offer.
+	 *
+	 * @param mixed $value Raw submitted slug.
+	 * @return string
+	 */
+	private static function clean_icon( $value ) {
+		$slug = is_scalar( $value ) ? sanitize_key( (string) $value ) : '';
+
+		return EFG_Icons::exists( $slug ) ? $slug : EFG_Icons::FALLBACK;
 	}
 
 	/**

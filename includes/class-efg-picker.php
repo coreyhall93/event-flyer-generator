@@ -170,7 +170,7 @@ class EFG_Picker {
 			'time'    => sanitize_text_field( wp_unslash( $_POST['new_time'] ?? '' ) ),
 			'venue'   => sanitize_text_field( wp_unslash( $_POST['new_venue'] ?? '' ) ),
 			'address' => sanitize_text_field( wp_unslash( $_POST['new_address'] ?? '' ) ),
-			'icon'    => sanitize_key( wp_unslash( $_POST['new_icon'] ?? 'tip' ) ),
+			'icon'    => EFG_Icons::exists( sanitize_key( wp_unslash( $_POST['new_icon'] ?? '' ) ) ) ? sanitize_key( wp_unslash( $_POST['new_icon'] ?? '' ) ) : EFG_Icons::FALLBACK,
 		);
 
 		foreach ( EFG_Events::FIELDS as $key => $meta_key ) {

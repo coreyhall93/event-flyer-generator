@@ -314,3 +314,66 @@
 }
 
 a.efg-btn { text-decoration: none; display: inline-block; }
+
+/* Icon chooser — show the icon, not its name. 15 of them; a dropdown of
+   text labels made you guess what "Megaphone / announcement" looked like. */
+.efg-label {
+	display: block;
+	margin-bottom: 6px;
+	font-weight: 600;
+	font-size: 14px;
+}
+
+.efg-icon-grid {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+
+.efg-icon-choice { display: block; cursor: pointer; }
+
+/* Visually hidden, still focusable and still a real radio. */
+.efg-icon-choice input {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+.efg-icon-swatch {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 38px;
+	height: 38px;
+	border: 1px solid #ccc;
+	color: #333;
+	background: #fff;
+	transition: border-color .12s ease, background-color .12s ease;
+}
+
+.efg-icon-choice:hover .efg-icon-swatch { border-color: #000; }
+
+.efg-icon-choice input:checked + .efg-icon-swatch {
+	background: #000;
+	border-color: #000;
+	color: #fff;
+}
+
+.efg-icon-choice input:focus-visible + .efg-icon-swatch {
+	outline: 2px solid #000;
+	outline-offset: 2px;
+}
+
+.screen-reader-text {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	clip-path: inset(50%);
+	white-space: nowrap;
+}

@@ -29,6 +29,7 @@ if ( ! defined( 'EFG_VERSION' ) ) {
 	define( 'EFG_VERSION', '1.0.2' );
 }
 
+require_once EFG_PATH . 'includes/class-efg-icons.php';
 require_once EFG_PATH . 'includes/class-efg-events.php';
 require_once EFG_PATH . 'includes/class-efg-shortcode.php';
 require_once EFG_PATH . 'includes/class-efg-picker.php';

@@ -555,8 +555,8 @@ class EFG_Events {
 			$row[ $key ] = (string) get_post_meta( $post->ID, $meta_key, true );
 		}
 
-		if ( '' === $row['icon'] ) {
-			$row['icon'] = 'tip';
+		if ( ! EFG_Icons::exists( $row['icon'] ) ) {
+			$row['icon'] = EFG_Icons::FALLBACK;
 		}
 
 		return $row;

@@ -18,12 +18,6 @@ $efg_gatherpress = EFG_Events::using_gatherpress();
 // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display-only highlight of the event just created.
 $efg_added = isset( $_GET['efg_added'] ) ? absint( $_GET['efg_added'] ) : 0;
 
-$efg_icon_options = array(
-	'tip'       => __( 'Idea / lightbulb', 'event-flyer-generator' ),
-	'people'    => __( 'People / gathering', 'event-flyer-generator' ),
-	'megaphone' => __( 'Megaphone / announcement', 'event-flyer-generator' ),
-	'pin'       => __( 'Location pin', 'event-flyer-generator' ),
-);
 ?>
 <div class="efg-builder">
 	<form method="post" class="efg-builder-form" id="efg-builder-form">
@@ -155,16 +149,22 @@ $efg_icon_options = array(
 					<label for="efg-new-time"><?php esc_html_e( 'Time', 'event-flyer-generator' ); ?></label>
 					<input type="text" id="efg-new-time" name="new_time" maxlength="<?php echo esc_attr( EFG_Shortcode::MAX_FIELD_LEN ); ?>" placeholder="7PM" />
 				</div>
-				<div class="efg-field">
-					<label for="efg-new-icon"><?php esc_html_e( 'Icon', 'event-flyer-generator' ); ?></label>
-					<select id="efg-new-icon" name="new_icon">
-						<?php foreach ( $efg_icon_options as $efg_key => $efg_label ) : ?>
-							<option value="<?php echo esc_attr( $efg_key ); ?>"><?php echo esc_html( $efg_label ); ?></option>
-						<?php endforeach; ?>
-					</select>
-				</div>
 			</div>
 
+			<div class="efg-field">
+				<span class="efg-label"><?php esc_html_e( 'Icon', 'event-flyer-generator' ); ?></span>
+				<div class="efg-icon-grid" role="radiogroup" aria-label="<?php esc_attr_e( 'Event icon', 'event-flyer-generator' ); ?>">
+					<?php foreach ( EFG_Icons::all() as $efg_slug => $efg_icon ) : ?>
+						<label class="efg-icon-choice" title="<?php echo esc_attr( $efg_icon['label'] ); ?>">
+							<input type="radio" name="new_icon" value="<?php echo esc_attr( $efg_slug ); ?>" <?php checked( EFG_Icons::FALLBACK, $efg_slug ); ?> />
+							<span class="efg-icon-swatch">
+								<?php echo EFG_Icons::svg( $efg_slug, 22 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- EFG_Icons::svg() escapes its own attributes. ?>
+								<span class="screen-reader-text"><?php echo esc_html( $efg_icon['label'] ); ?></span>
+							</span>
+						</label>
+					<?php endforeach; ?>
+				</div>
+			</div>
 			<div class="efg-field">
 				<label for="efg-new-desc"><?php esc_html_e( 'Description', 'event-flyer-generator' ); ?></label>
 				<textarea id="efg-new-desc" name="new_description" rows="2" maxlength="<?php echo esc_attr( EFG_Shortcode::MAX_DESC_LEN ); ?>"></textarea>
