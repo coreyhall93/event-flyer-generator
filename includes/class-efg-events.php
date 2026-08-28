@@ -285,12 +285,44 @@ class EFG_Events {
 			wp_delete_post( $sample->ID, true );
 		}
 
+		// The demo is a tool, not a website. Name it after what it does.
+		update_option( 'blogname', 'Event Flyer Generator' );
+		update_option( 'blogdescription', '' );
+
 		$theme = get_stylesheet();
 
+		// Header: keep the site title, drop the nav and the theme's stock
+		// "Learn more" button, which goes nowhere and reads as part of the tool.
+		self::replace_template_part(
+			'header',
+			$theme,
+			'<!-- wp:group {"align":"full","style":{"spacing":{"padding":{"top":"var:preset|spacing|30","bottom":"var:preset|spacing|30"}}},"layout":{"type":"constrained"}} -->'
+			. '<div class="wp-block-group alignfull" style="padding-top:var(--wp--preset--spacing--30);padding-bottom:var(--wp--preset--spacing--30)">'
+			. '<!-- wp:site-title {"level":0,"isLink":false} /-->'
+			. '</div><!-- /wp:group -->'
+		);
+
+		// Footer: the theme's placeholder address and opening hours read as if
+		// they belong to the flyer tool.
+		self::replace_template_part(
+			'footer',
+			$theme,
+			'<!-- wp:group {"layout":{"type":"constrained"}} --><div class="wp-block-group"></div><!-- /wp:group -->'
+		);
+	}
+
+	/**
+	 * Override one of the active theme's template parts.
+	 *
+	 * @param string $slug    Template part slug, e.g. 'header'.
+	 * @param string $theme   Active theme stylesheet.
+	 * @param string $content Block markup to use instead.
+	 */
+	private static function replace_template_part( $slug, $theme, $content ) {
 		$existing = get_posts(
 			array(
 				'post_type'        => 'wp_template_part',
-				'name'             => 'footer',
+				'name'             => $slug,
 				'post_status'      => 'any',
 				'numberposts'      => 1,
 				'suppress_filters' => false,
@@ -304,14 +336,11 @@ class EFG_Events {
 			)
 		);
 
-		// An empty group keeps the footer slot valid while rendering nothing.
-		$blank = '<!-- wp:group {"layout":{"type":"constrained"}} --><div class="wp-block-group"></div><!-- /wp:group -->';
-
 		if ( ! empty( $existing ) ) {
 			wp_update_post(
 				array(
 					'ID'           => $existing[0]->ID,
-					'post_content' => $blank,
+					'post_content' => $content,
 				)
 			);
 			return;
@@ -320,17 +349,16 @@ class EFG_Events {
 		$id = wp_insert_post(
 			array(
 				'post_type'    => 'wp_template_part',
-				'post_name'    => 'footer',
-				'post_title'   => 'Footer',
-				'post_content' => $blank,
+				'post_name'    => $slug,
+				'post_title'   => ucfirst( $slug ),
+				'post_content' => $content,
 				'post_status'  => 'publish',
-				'tax_input'    => array( 'wp_template_part_area' => array( 'footer' ) ),
 			)
 		);
 
 		if ( $id && ! is_wp_error( $id ) ) {
 			wp_set_object_terms( $id, $theme, 'wp_theme' );
-			wp_set_object_terms( $id, 'footer', 'wp_template_part_area' );
+			wp_set_object_terms( $id, $slug, 'wp_template_part_area' );
 		}
 	}
 
@@ -448,10 +476,17 @@ class EFG_Events {
 	 * Create the picker and manual-form pages, and put the picker on the front.
 	 */
 	private static function seed_pages() {
+		// One page on purpose. The manual [event_flyer_form] is the fallback for
+		// sites with no event source; showing it alongside the picker just poses
+		// a question the visitor has no way to answer.
 		$pages = array(
-			'flyer-builder'           => array( 'Flyer Builder', '[event_flyer_picker]' ),
-			'create-your-event-flyer' => array( 'Create Your Event Flyer', '[event_flyer_form]' ),
+			'flyer-builder' => array( 'Flyer Builder', '[event_flyer_picker]' ),
 		);
+
+		$stale = get_page_by_path( 'create-your-event-flyer' );
+		if ( $stale ) {
+			wp_delete_post( $stale->ID, true );
+		}
 
 		$front_id = 0;
 
