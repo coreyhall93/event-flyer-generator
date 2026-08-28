@@ -84,6 +84,177 @@ class EFG_Events {
 	}
 
 	/**
+	 * Sample events, used only by seed_demo_content().
+	 *
+	 * @return array
+	 */
+	public static function demo_events() {
+		return array(
+			array(
+				'title'   => 'Intro to the Block Editor',
+				'excerpt' => 'A hands-on walkthrough for anyone new to blocks. Bring questions.',
+				'date'    => 'OCT 27',
+				'time'    => '7PM',
+				'venue'   => 'Public Library',
+				'address' => '509 S Dargan St',
+				'icon'    => 'tip',
+			),
+			array(
+				'title'   => 'Build Your First Block Theme',
+				'excerpt' => 'Bring a laptop. We start from an empty folder and finish with a working theme.',
+				'date'    => 'NOV 10',
+				'time'    => '6:30PM',
+				'venue'   => 'Hive Coworking',
+				'address' => '181 W Evans St',
+				'icon'    => 'people',
+			),
+			array(
+				'title'   => 'Contributor Day',
+				'excerpt' => 'Pick a team, make your first contribution to WordPress. All skill levels.',
+				'date'    => 'NOV 22',
+				'time'    => '10AM',
+				'venue'   => 'Community College',
+				'address' => '2715 W Lucas St',
+				'icon'    => 'people',
+			),
+			array(
+				'title'   => 'Show and Tell',
+				'excerpt' => 'Five minutes each. Show what you built this year.',
+				'date'    => 'DEC 8',
+				'time'    => '7PM',
+				'venue'   => 'Public Library',
+				'address' => '509 S Dargan St',
+				'icon'    => 'megaphone',
+			),
+			array(
+				'title'   => 'Accessibility Clinic',
+				'excerpt' => 'Bring a site. We audit it together and leave with a fix list.',
+				'date'    => 'JAN 12',
+				'time'    => '6PM',
+				'venue'   => 'Hive Coworking',
+				'address' => '181 W Evans St',
+				'icon'    => 'tip',
+			),
+			array(
+				'title'   => 'Plugin Night',
+				'excerpt' => 'Ship something small. We start and finish a plugin in one sitting.',
+				'date'    => 'JAN 26',
+				'time'    => '7PM',
+				'venue'   => 'Public Library',
+				'address' => '509 S Dargan St',
+				'icon'    => 'megaphone',
+			),
+		);
+	}
+
+	/**
+	 * Create sample events and the two builder pages.
+	 *
+	 * Demo helper. Never hooked — it only runs when called explicitly, by the
+	 * Playground blueprint or by hand:
+	 *
+	 *   wp eval 'EFG_Events::seed_demo_content();'
+	 *
+	 * Idempotent: existing events and pages are left alone.
+	 *
+	 * @return int Number of events created.
+	 */
+	public static function seed_demo_content() {
+		$created = 0;
+		$order   = 0;
+
+		foreach ( self::demo_events() as $seed ) {
+			++$order;
+
+			// get_page_by_title() is deprecated as of WP 6.2.
+			$existing = get_posts(
+				array(
+					'post_type'        => self::POST_TYPE,
+					'title'            => $seed['title'],
+					'post_status'      => 'any',
+					'numberposts'      => 1,
+					'fields'           => 'ids',
+					'suppress_filters' => false,
+				)
+			);
+
+			if ( ! empty( $existing ) ) {
+				continue;
+			}
+
+			$id = wp_insert_post(
+				array(
+					'post_type'    => self::POST_TYPE,
+					'post_title'   => $seed['title'],
+					'post_excerpt' => $seed['excerpt'],
+					'post_status'  => 'publish',
+					'menu_order'   => $order,
+				)
+			);
+
+			if ( is_wp_error( $id ) || ! $id ) {
+				continue;
+			}
+
+			foreach ( self::FIELDS as $key => $meta_key ) {
+				update_post_meta( $id, $meta_key, $seed[ $key ] );
+			}
+
+			++$created;
+		}
+
+		self::seed_pages();
+
+		return $created;
+	}
+
+	/**
+	 * Create the picker and manual-form pages, and put the picker on the front.
+	 */
+	private static function seed_pages() {
+		$pages = array(
+			'flyer-builder'           => array( 'Flyer Builder', '[event_flyer_picker]' ),
+			'create-your-event-flyer' => array( 'Create Your Event Flyer', '[event_flyer_form]' ),
+		);
+
+		$front_id = 0;
+
+		foreach ( $pages as $slug => $page ) {
+			$existing = get_page_by_path( $slug );
+
+			if ( $existing ) {
+				$page_id = $existing->ID;
+				wp_update_post(
+					array(
+						'ID'           => $page_id,
+						'post_content' => $page[1],
+						'post_status'  => 'publish',
+					)
+				);
+			} else {
+				$page_id = wp_insert_post(
+					array(
+						'post_type'    => 'page',
+						'post_title'   => $page[0],
+						'post_name'    => $slug,
+						'post_content' => $page[1],
+						'post_status'  => 'publish',
+					)
+				);
+			}
+
+			if ( 'flyer-builder' === $slug && $page_id && ! is_wp_error( $page_id ) ) {
+				$front_id = $page_id;
+			}
+		}
+
+		if ( $front_id ) {
+			update_option( 'show_on_front', 'page' );
+			update_option( 'page_on_front', $front_id );
+		}
+	}
+
+	/**
 	 * Convert one event post into the array shape the flyer template expects.
 	 *
 	 * @param int|WP_Post $post Event.

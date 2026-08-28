@@ -32,7 +32,7 @@
 		},
 		{
 			"step": "runPHP",
-			"code": "<?php require_once '/wordpress/wp-load.php'; if ( ! defined( 'EFG_PATH' ) ) { echo 'Event Flyer Generator did not load; nothing seeded.'; return; } require_once EFG_PATH . 'demo/seed.php';"
+			"code": "<?php require_once '/wordpress/wp-load.php'; if ( class_exists( 'EFG_Events' ) ) { EFG_Events::seed_demo_content(); echo 'seeded'; } else { echo 'plugin not loaded'; }"
 		}
 	]
 }
