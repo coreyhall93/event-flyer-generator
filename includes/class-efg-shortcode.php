@@ -1,4 +1,10 @@
 <?php
+/**
+ * Front-end flyer-builder form: rendering and submission handling.
+ *
+ * @package event-flyer-generator
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -17,12 +23,18 @@ class EFG_Shortcode {
 	/** Seconds one IP must wait between flyer generations. */
 	const THROTTLE_SECONDS = 15;
 
+	/**
+	 * Register the shortcode, the submit handler and the form assets.
+	 */
 	public function __construct() {
 		add_shortcode( 'event_flyer_form', array( $this, 'render_form' ) );
 		add_action( 'template_redirect', array( $this, 'handle_submit' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'assets' ) );
 	}
 
+	/**
+	 * Enqueue the form's CSS and JS, only on a page that renders the shortcode.
+	 */
 	public function assets() {
 		$post = get_post();
 		if ( ! is_singular() || ! $post || ! has_shortcode( (string) $post->post_content, 'event_flyer_form' ) ) {
@@ -61,8 +73,10 @@ class EFG_Shortcode {
 			);
 		}
 
-		$program_name = self::clean( $_POST['program_name'] ?? '' );
-		$footer_line  = self::clean( $_POST['footer_line'] ?? '' );
+		// Sanitized inline rather than inside the helper, so the security-relevant
+		// step is visible at the point of use (and statically checkable).
+		$program_name = self::cap( sanitize_text_field( wp_unslash( $_POST['program_name'] ?? '' ) ) );
+		$footer_line  = self::cap( sanitize_text_field( wp_unslash( $_POST['footer_line'] ?? '' ) ) );
 
 		if ( '' === $program_name ) {
 			wp_die(
@@ -72,10 +86,15 @@ class EFG_Shortcode {
 			);
 		}
 
+		// Collected raw here and sanitized per element in the loop below, where the
+		// field type is known (textarea vs text vs key). Every value that reaches
+		// $events has gone through sanitize_textarea_field(), sanitize_text_field()
+		// or sanitize_key(); nothing raw is stored or echoed.
 		$fields = array();
 		foreach ( array( 'title', 'date', 'time', 'description', 'venue', 'address', 'icon' ) as $name ) {
-			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified above.
-			$fields[ $name ] = (array) ( $_POST[ 'event_' . $name ] ?? array() );
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- nonce verified above; sanitized per element below.
+			$raw             = $_POST[ 'event_' . $name ] ?? array();
+			$fields[ $name ] = is_array( $raw ) ? $raw : array();
 		}
 
 		$events = array();
@@ -105,12 +124,7 @@ class EFG_Shortcode {
 
 		set_transient( $throttle_key, 1, self::THROTTLE_SECONDS );
 
-		// Must be lowercase hex: the print view reads this token back through
-		// sanitize_key(), which lowercases. A mixed-case token (as
-		// wp_generate_password() produces) survives that round trip only when the
-		// backing store is case-insensitive, so it works on a plain options table
-		// but misses on every host running a persistent object cache.
-		$token = bin2hex( random_bytes( 16 ) );
+		$token = self::generate_token();
 		set_transient(
 			'efg_flyer_' . $token,
 			array(
@@ -134,9 +148,50 @@ class EFG_Shortcode {
 	}
 
 	/**
-	 * Sanitize and length-cap one submitted value.
+	 * Generate the lookup token for a flyer.
 	 *
-	 * @param mixed $value    Raw (still slashed) input.
+	 * MUST return only lowercase [a-z0-9]. The print view reads the token back
+	 * through sanitize_key(), which lowercases and strips, so any token that is
+	 * not already a fixed point of sanitize_key() is written under one key and
+	 * read under another. That mismatch is invisible on a plain options table
+	 * (case-insensitive collation) and breaks the plugin on every host running a
+	 * persistent object cache, where get_transient() uses a case-sensitive
+	 * cache key and never falls back to the database.
+	 *
+	 * wp_generate_password() is mixed case and fails this. Do not use it here.
+	 * Covered by tests/TokenTest.php.
+	 *
+	 * @return string
+	 */
+	public static function generate_token() {
+		return bin2hex( random_bytes( 16 ) );
+	}
+
+	/**
+	 * Length-cap an already-sanitized value.
+	 *
+	 * A flyer has to fit on one page, and this endpoint is public, so nothing
+	 * unbounded gets stored.
+	 *
+	 * @param string $value    Sanitized value.
+	 * @param bool   $textarea Whether the longer description cap applies.
+	 * @return string
+	 */
+	private static function cap( $value, $textarea = false ) {
+		$value = (string) $value;
+		$limit = $textarea ? self::MAX_DESC_LEN : self::MAX_FIELD_LEN;
+
+		return function_exists( 'mb_substr' ) ? mb_substr( $value, 0, $limit ) : substr( $value, 0, $limit );
+	}
+
+	/**
+	 * Unslash, sanitize and length-cap one raw submitted event field.
+	 *
+	 * Used for the event arrays, where the field type is only known here.
+	 * sanitize_text_field()/sanitize_textarea_field() both return '' for arrays
+	 * and objects, so a nested payload cannot slip through.
+	 *
+	 * @param mixed $value    Raw, still-slashed input.
 	 * @param bool  $textarea Whether to preserve line breaks.
 	 * @return string
 	 */
@@ -146,9 +201,8 @@ class EFG_Shortcode {
 		}
 		$value = wp_unslash( (string) $value );
 		$value = $textarea ? sanitize_textarea_field( $value ) : sanitize_text_field( $value );
-		$limit = $textarea ? self::MAX_DESC_LEN : self::MAX_FIELD_LEN;
 
-		return function_exists( 'mb_substr' ) ? mb_substr( $value, 0, $limit ) : substr( $value, 0, $limit );
+		return self::cap( $value, $textarea );
 	}
 
 	/**
@@ -162,6 +216,11 @@ class EFG_Shortcode {
 		return '' !== $ip ? $ip : 'unknown';
 	}
 
+	/**
+	 * Render the form.
+	 *
+	 * @return string Form markup.
+	 */
 	public function render_form() {
 		ob_start();
 		include EFG_PATH . 'templates/form.php';

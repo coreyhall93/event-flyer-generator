@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<ruleset name="event-flyer-generator">
+	<description>WordPress coding standards for the Event Flyer Generator plugin.</description>
+
+	<file>.</file>
+
+	<exclude-pattern>/vendor/*</exclude-pattern>
+	<exclude-pattern>/node_modules/*</exclude-pattern>
+	<exclude-pattern>/.phpunit.cache/*</exclude-pattern>
+
+	<arg name="extensions" value="php"/>
+	<arg name="colors"/>
+	<arg value="sp"/>
+	<arg name="parallel" value="4"/>
+
+	<config name="minimum_wp_version" value="6.4"/>
+	<config name="testVersion" value="7.4-"/>
+
+	<rule ref="WordPress-Core"/>
+	<rule ref="WordPress-Docs"/>
+	<rule ref="WordPress-Extra"/>
+
+	<!--
+		No PHPCompatibility here on purpose. The released version (9.3.5) predates
+		PHP 8 and silently reports nothing for PHP 8-only syntax, so it would be a
+		check that always passes. The "Requires PHP: 7.4" header is verified for
+		real in CI instead, by parsing every shipped file on PHP 7.4.
+	-->
+
+	<!-- Not applicable to a standalone PHPUnit suite that never loads WordPress. -->
+	<rule ref="WordPress.WP.GlobalVariablesOverride">
+		<exclude-pattern>/tests/*</exclude-pattern>
+	</rule>
+
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="event-flyer-generator"/>
+			</property>
+		</properties>
+	</rule>
+
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="efg"/>
+				<element value="EFG"/>
+			</property>
+		</properties>
+		<!--
+			WPCS wants 4+ characters. EFG_ / efg_ is used consistently across every
+			class, constant, transient and form field here, and renaming it would
+			churn every file for a marginal collision gain. Accepted deliberately.
+		-->
+		<exclude name="WordPress.NamingConventions.PrefixAllGlobals.ShortPrefixPassed"/>
+	</rule>
+
+	<!-- The suite runs standalone PHPUnit with no WordPress bootstrap, so the
+	     WordPress-specific naming and escaping rules do not apply to it. -->
+	<rule ref="WordPress">
+		<exclude-pattern>/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.Files.FileName">
+		<exclude-pattern>/tests/*</exclude-pattern>
+	</rule>
+</ruleset>

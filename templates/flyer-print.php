@@ -2,6 +2,8 @@
 /**
  * Print-ready flyer output. Included by EFG_Print_View::maybe_render().
  * $data is set by the caller: ['program_name' => ..., 'footer_line' => ..., 'events' => [...]]
+ *
+ * @package event-flyer-generator
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -33,8 +35,8 @@ $name_parts = explode( ' ', $program_name, 2 );
 	<title><?php echo esc_html( $program_name ); ?> — <?php esc_html_e( 'Flyer', 'event-flyer-generator' ); ?></title>
 	<style>
 		/* Fonts are bundled, not fetched from Google: a hotlink would send every
-		   visitor's IP to a third party without consent. Both are SIL OFL;
-		   see assets/fonts/OFL-Oswald.txt and OFL-Inter.txt. */
+			visitor's IP to a third party without consent. Both are SIL OFL;
+			see assets/fonts/OFL-Oswald.txt and OFL-Inter.txt. */
 		@font-face {
 			font-family: 'Oswald';
 			src: url('<?php echo esc_url( EFG_URL . 'assets/fonts/oswald-latin-var.woff2' ); ?>') format('woff2');

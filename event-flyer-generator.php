@@ -11,6 +11,8 @@
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: event-flyer-generator
  * Domain Path: /languages
+ *
+ * @package event-flyer-generator
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -27,8 +29,8 @@ if ( ! defined( 'EFG_VERSION' ) ) {
 	define( 'EFG_VERSION', '1.0.1' );
 }
 
-require_once EFG_PATH . 'includes/class-shortcode.php';
-require_once EFG_PATH . 'includes/class-print-view.php';
+require_once EFG_PATH . 'includes/class-efg-shortcode.php';
+require_once EFG_PATH . 'includes/class-efg-print-view.php';
 
 add_action(
 	'init',

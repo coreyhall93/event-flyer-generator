@@ -1,4 +1,10 @@
 <?php
+/**
+ * Print-ready flyer view, rendered in place of the theme.
+ *
+ * @package event-flyer-generator
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -9,10 +15,16 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class EFG_Print_View {
 
+	/**
+	 * Hook the interceptor early, ahead of redirect_canonical.
+	 */
 	public function __construct() {
 		add_action( 'template_redirect', array( $this, 'maybe_render' ), 1 );
 	}
 
+	/**
+	 * Render the flyer and halt, when the request carries a valid token.
+	 */
 	public function maybe_render() {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only view keyed by an unguessable token.
 		if ( empty( $_GET['efg_flyer'] ) ) {

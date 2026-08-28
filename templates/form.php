@@ -1,6 +1,8 @@
 <?php
 /**
  * Front-end flyer-builder form. Included by EFG_Shortcode::render_form().
+ *
+ * @package event-flyer-generator
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -27,7 +29,17 @@ $icon_options = array(
 		<div id="efg-events">
 			<?php for ( $i = 0; $i < EFG_Shortcode::MAX_EVENTS; $i++ ) : ?>
 				<fieldset class="efg-event <?php echo $i > 0 ? 'efg-event--hidden' : ''; ?>" data-efg-event="<?php echo esc_attr( $i ); ?>">
-					<legend><?php printf( esc_html__( 'Event %d', 'event-flyer-generator' ), $i + 1 ); ?></legend>
+					<legend>
+						<?php
+						echo esc_html(
+							sprintf(
+								/* translators: %d: event number, 1 through 4. */
+								__( 'Event %d', 'event-flyer-generator' ),
+								$i + 1
+							)
+						);
+						?>
+					</legend>
 
 					<div class="efg-row">
 						<div class="efg-field">
@@ -78,10 +90,12 @@ $icon_options = array(
 
 		<button type="button" id="efg-add-event">
 			<?php
-			printf(
-				/* translators: %d: maximum number of events on one flyer. */
-				esc_html__( '+ Add another event (up to %d)', 'event-flyer-generator' ),
-				(int) EFG_Shortcode::MAX_EVENTS
+			echo esc_html(
+				sprintf(
+					/* translators: %d: maximum number of events on one flyer. */
+					__( '+ Add another event (up to %d)', 'event-flyer-generator' ),
+					(int) EFG_Shortcode::MAX_EVENTS
+				)
 			);
 			?>
 		</button>
