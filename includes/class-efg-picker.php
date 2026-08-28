@@ -25,6 +25,65 @@ class EFG_Picker {
 		add_action( 'template_redirect', array( $this, 'handle_submit' ) );
 		add_action( 'template_redirect', array( $this, 'handle_add_event' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'assets' ) );
+		add_action( 'admin_notices', array( $this, 'activation_notice' ) );
+	}
+
+	/** Option holding the id of the page created on activation. */
+	const PAGE_OPTION = 'efg_builder_page_id';
+
+	/**
+	 * On activation, give the plugin a front-end home.
+	 *
+	 * Without this, activating does nothing visible: the shortcodes exist but
+	 * there is no page carrying them, so the plugin looks broken until you
+	 * happen to read the readme. Creates the page only if one is not already
+	 * there, and never touches the site's front-page setting.
+	 */
+	public static function activate() {
+		$existing = get_page_by_path( 'flyer-builder' );
+
+		if ( $existing ) {
+			update_option( self::PAGE_OPTION, $existing->ID );
+			return;
+		}
+
+		$page_id = wp_insert_post(
+			array(
+				'post_type'    => 'page',
+				'post_title'   => __( 'Flyer Builder', 'event-flyer-generator' ),
+				'post_name'    => 'flyer-builder',
+				'post_content' => '<!-- wp:shortcode -->[event_flyer_picker]<!-- /wp:shortcode -->',
+				'post_status'  => 'publish',
+			)
+		);
+
+		if ( $page_id && ! is_wp_error( $page_id ) ) {
+			update_option( self::PAGE_OPTION, $page_id );
+			set_transient( 'efg_just_activated', 1, MINUTE_IN_SECONDS * 5 );
+		}
+	}
+
+	/**
+	 * Point the admin at the page that was just created.
+	 */
+	public function activation_notice() {
+		if ( ! get_transient( 'efg_just_activated' ) || ! current_user_can( 'edit_posts' ) ) {
+			return;
+		}
+
+		delete_transient( 'efg_just_activated' );
+
+		$page_id = (int) get_option( self::PAGE_OPTION );
+		if ( ! $page_id ) {
+			return;
+		}
+
+		printf(
+			'<div class="notice notice-success is-dismissible"><p>%s <a href="%s">%s</a></p></div>',
+			esc_html__( 'Event Flyer Generator is ready.', 'event-flyer-generator' ),
+			esc_url( (string) get_permalink( $page_id ) ),
+			esc_html__( 'Open your flyer builder', 'event-flyer-generator' )
+		);
 	}
 
 	/**

@@ -2,24 +2,37 @@
 
 [![CI](https://github.com/coreyhall93/event-flyer-generator/actions/workflows/ci.yml/badge.svg)](https://github.com/coreyhall93/event-flyer-generator/actions/workflows/ci.yml)
 
-A small WordPress plugin that lets anyone fill out a front-end form and get a
-printable, one-page flyer for 1-4 upcoming events — no design tools required.
+A small WordPress plugin that turns your next few events into a printable,
+one-page flyer. Tick up to four events, click a button, print it.
 
 Built for community programs (meetups, workshops, recurring event series) that
 need a quick, consistent flyer without opening Canva or Figma every time.
 
+**Works with GatherPress.** If [GatherPress](https://wordpress.org/plugins/gatherpress/)
+is active, the plugin reads your existing GatherPress events, so you never
+retype an event you already entered. Without GatherPress it works standalone on
+its own lightweight event type, and you can add events inline.
+
 ## Try it live
 
-**[Open the demo in WordPress Playground](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/coreyhall93/event-flyer-generator/master/blueprint.json)** — boots a throwaway WordPress site in your browser with the plugin installed and the form on the front page. Nothing to install, nothing persists.
+**[Open the demo in WordPress Playground](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/coreyhall93/event-flyer-generator/master/blueprint.json)** — boots a throwaway WordPress site in your browser with this plugin, GatherPress, and six sample events already set up. Nothing to install, nothing persists.
+
+It runs the exact code on this repository's `master` branch, so what you try
+there is what you get when you install it.
 
 ## What it does
 
-- Adds an `[event_flyer_form]` shortcode. Drop it on any page.
-- Visitors fill in a program name, 1-4 events (date, time, title, description,
-  venue, address, icon), and a footer line.
-- Submitting generates a print-ready flyer page (816×1056, letter size) with a
-  "Print / Save as PDF" button — no server-side PDF library, just the
-  browser's native print-to-PDF.
+- **`[event_flyer_picker]`** — the main one. A two-column builder: your events
+  on the left, the flyer on the right. Tick up to four, or use "Flyer for just
+  this" on a single event. Activating the plugin creates a **Flyer Builder**
+  page carrying this shortcode, so there is nothing to wire up.
+- **`[event_flyer_form]`** — the manual fallback. A blank form for one-off
+  flyers, for events you do not want to store.
+- Generates a print-ready page (816×1056, letter size) with a "Print / Save as
+  PDF" button. No server-side PDF library, just the browser's print-to-PDF.
+- The layout changes with the number of events: one event is a stacked poster,
+  four is the tightest setting. Long content is scaled to fit rather than
+  silently clipped.
 - Flyer data is stored in a WordPress transient for one hour. That means it
   lives in your site's database (or object cache) for that window, and expired
   rows can linger until WordPress's daily cleanup runs. It is never attached to
@@ -31,16 +44,16 @@ need a quick, consistent flyer without opening Canva or Figma every time.
 1. Download this repository as a ZIP (`Code` → `Download ZIP`).
 2. In your WordPress admin: **Plugins → Add New → Upload Plugin**, and upload
    the ZIP.
-3. Activate **Event Flyer Generator**.
-4. Create a page, add the `[event_flyer_form]` shortcode to its content,
-   publish.
-5. Visit that page to use the form.
+3. Activate **Event Flyer Generator**. A **Flyer Builder** page is created for
+   you, and a notice links straight to it.
+4. Add some events. With GatherPress active it uses your GatherPress events
+   automatically; otherwise add them from the builder page itself.
 
 ## Requirements
 
 - WordPress 6.4+
 - PHP 7.4+
-- No database tables, no external services, no build step.
+- GatherPress optional. No database tables, no external services, no build step.
 
 ## Notes
 
@@ -62,6 +75,14 @@ need a quick, consistent flyer without opening Canva or Figma every time.
   whole site's cache.
 
 ## Changelog
+
+### 1.0.2
+- Reads GatherPress events when GatherPress is active; the built-in add-event
+  form is the no-GatherPress fallback.
+- New `[event_flyer_picker]` two-column builder, and a **Flyer Builder** page is
+  created on activation so there is nothing to wire up.
+- A distinct layout per event count, and content is scaled to fit the page
+  instead of being silently clipped.
 
 ### 1.0.1
 - **Fixed:** flyers failed to load on any host with a persistent object cache.
