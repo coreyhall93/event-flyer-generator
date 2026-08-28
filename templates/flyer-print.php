@@ -17,9 +17,9 @@ $icon_paths = array(
 
 $has_fill_rule = array( 'people', 'megaphone' );
 
-$program_name = $data['program_name'];
-$footer_line  = $data['footer_line'];
-$events       = $data['events'];
+$program_name = isset( $data['program_name'] ) ? $data['program_name'] : '';
+$footer_line  = isset( $data['footer_line'] ) ? $data['footer_line'] : '';
+$events       = isset( $data['events'] ) ? (array) $data['events'] : array();
 
 // Program name renders as two stacked lines: split on the last space, or
 // keep it on one line if it's short enough that splitting would look worse.
@@ -31,8 +31,23 @@ $name_parts = explode( ' ', $program_name, 2 );
 	<meta charset="<?php bloginfo( 'charset' ); ?>">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title><?php echo esc_html( $program_name ); ?> — <?php esc_html_e( 'Flyer', 'event-flyer-generator' ); ?></title>
-	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap">
 	<style>
+		/* Fonts are bundled, not fetched from Google: a hotlink would send every
+		   visitor's IP to a third party without consent. Both are SIL OFL;
+		   see assets/fonts/OFL-Oswald.txt and OFL-Inter.txt. */
+		@font-face {
+			font-family: 'Oswald';
+			src: url('<?php echo esc_url( EFG_URL . 'assets/fonts/oswald-latin-var.woff2' ); ?>') format('woff2');
+			font-weight: 200 700;
+			font-display: swap;
+		}
+		@font-face {
+			font-family: 'Inter';
+			src: url('<?php echo esc_url( EFG_URL . 'assets/fonts/inter-latin-var.woff2' ); ?>') format('woff2');
+			font-weight: 100 900;
+			font-display: swap;
+		}
+
 		* { box-sizing: border-box; }
 		body { margin: 0; background: #ccc; font-family: 'Inter', sans-serif; }
 
@@ -82,7 +97,6 @@ $name_parts = explode( ' ', $program_name, 2 );
 
 		.efg-events { flex-grow: 1; display: flex; flex-direction: column; justify-content: space-evenly; padding: 0 64px; }
 		.efg-event-row { display: flex; gap: 32px; align-items: flex-start; }
-		.efg-event-row + .efg-event-row { border-top: 1px solid #000; margin-top: 0; padding-top: 0; }
 		.efg-events > .efg-event-row:not(:last-child) { border-bottom: 1px solid #000; padding-bottom: 24px; margin-bottom: 0; }
 
 		.efg-when { width: 120px; flex-shrink: 0; }
@@ -164,7 +178,7 @@ $name_parts = explode( ' ', $program_name, 2 );
 
 		<div class="efg-footer">
 			<div class="rule"></div>
-			<div class="line"><?php echo wp_kses_post( $footer_line ); ?></div>
+			<div class="line"><?php echo esc_html( $footer_line ); ?></div>
 		</div>
 
 	</div>

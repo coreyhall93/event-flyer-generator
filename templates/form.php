@@ -17,14 +17,15 @@ $icon_options = array(
 <div class="efg-wrap">
 	<form method="post" class="efg-form">
 		<?php wp_nonce_field( 'efg_create_flyer', 'efg_nonce' ); ?>
+		<input type="hidden" name="efg_return" value="<?php echo esc_url( get_permalink() ); ?>" />
 
 		<div class="efg-field">
 			<label for="efg-program-name"><?php esc_html_e( 'Program name', 'event-flyer-generator' ); ?></label>
-			<input type="text" id="efg-program-name" name="program_name" value="WordPress Local Connect" required />
+			<input type="text" id="efg-program-name" name="program_name" maxlength="<?php echo esc_attr( EFG_Shortcode::MAX_FIELD_LEN ); ?>" required />
 		</div>
 
 		<div id="efg-events">
-			<?php for ( $i = 0; $i < 4; $i++ ) : ?>
+			<?php for ( $i = 0; $i < EFG_Shortcode::MAX_EVENTS; $i++ ) : ?>
 				<fieldset class="efg-event <?php echo $i > 0 ? 'efg-event--hidden' : ''; ?>" data-efg-event="<?php echo esc_attr( $i ); ?>">
 					<legend><?php printf( esc_html__( 'Event %d', 'event-flyer-generator' ), $i + 1 ); ?></legend>
 
@@ -75,11 +76,19 @@ $icon_options = array(
 			<?php endfor; ?>
 		</div>
 
-		<button type="button" id="efg-add-event"><?php esc_html_e( '+ Add another event (up to 4)', 'event-flyer-generator' ); ?></button>
+		<button type="button" id="efg-add-event">
+			<?php
+			printf(
+				/* translators: %d: maximum number of events on one flyer. */
+				esc_html__( '+ Add another event (up to %d)', 'event-flyer-generator' ),
+				(int) EFG_Shortcode::MAX_EVENTS
+			);
+			?>
+		</button>
 
 		<div class="efg-field">
 			<label for="efg-footer"><?php esc_html_e( 'Footer line', 'event-flyer-generator' ); ?></label>
-			<input type="text" id="efg-footer" name="footer_line" value="Open to all &middot; Every skill level" />
+			<input type="text" id="efg-footer" name="footer_line" maxlength="<?php echo esc_attr( EFG_Shortcode::MAX_FIELD_LEN ); ?>" placeholder="<?php esc_attr_e( 'e.g. Open to all · Every skill level', 'event-flyer-generator' ); ?>" />
 		</div>
 
 		<button type="submit" name="efg_submit" value="1" class="efg-submit"><?php esc_html_e( 'Generate printable flyer', 'event-flyer-generator' ); ?></button>

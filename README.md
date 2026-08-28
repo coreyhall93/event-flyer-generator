@@ -8,7 +8,7 @@ need a quick, consistent flyer without opening Canva or Figma every time.
 
 ## Try it live
 
-**Demo site:** https://coreyhall93-yedwm-studio.wp.build
+**[Open the demo in WordPress Playground](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/coreyhall93/event-flyer-generator/master/blueprint.json)** — boots a throwaway WordPress site in your browser with the plugin installed and the form on the front page. Nothing to install, nothing persists.
 
 ## What it does
 
@@ -40,12 +40,33 @@ need a quick, consistent flyer without opening Canva or Figma every time.
 ## Notes
 
 - The form is public by default — no login required to generate a flyer.
+  Submissions are throttled to one flyer per IP every 15 seconds, and each
+  field is length-capped, since the endpoint writes to the options table.
 - Icons are drawn from [`@wordpress/icons`](https://github.com/WordPress/gutenberg/tree/trunk/packages/icons)
   (GPLv2+), the open-source icon set that ships with the WordPress block
   editor.
+- Oswald and Inter are bundled locally under `assets/fonts/` (SIL OFL,
+  licenses included). Nothing is fetched from Google Fonts, so no visitor
+  IP addresses are sent to third parties.
 - Print output forces `print-color-adjust: exact` so background colors (the
   black header band) survive printing — browsers strip backgrounds from
   print output by default.
+- Uninstalling removes every transient the plugin wrote.
+
+## Changelog
+
+### 1.0.1
+- **Fixed:** flyers failed to load on any host with a persistent object cache.
+  Tokens were generated mixed-case but read back lowercased, so the lookup
+  missed unless the storage backend happened to be case-insensitive.
+- **Fixed:** "Back to form" returned to the site home page instead of the form.
+- Added rate limiting and field length caps on the public submit endpoint.
+- Bundled fonts locally instead of hotlinking Google Fonts.
+- Added `uninstall.php` to clean up transients.
+- Added `Requires at least` / `Requires PHP` headers and loaded the text domain.
+
+### 1.0.0
+- Initial release.
 
 ## License
 
