@@ -59,7 +59,10 @@ there is what you get when you install it.
 
 ## Installation
 
-1. Download this repository as a ZIP (`Code` → `Download ZIP`).
+1. Download **`event-flyer-generator.zip`** from the
+   [latest release](https://github.com/coreyhall93/event-flyer-generator/releases/latest).
+   That ZIP is the plugin only. The "Source code" archives on the same page also
+   carry the test suite and CI config, which WordPress does not need.
 2. In your WordPress admin: **Plugins → Add New → Upload Plugin**, and upload
    the ZIP.
 3. Activate **Event Flyer Generator**. A **Flyer Builder** page is created for
