@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 		<div class="efg-field">
 			<label for="efg-program-name"><?php esc_html_e( 'Program name', 'event-flyer-generator' ); ?></label>
-			<input type="text" id="efg-program-name" name="program_name" maxlength="<?php echo esc_attr( EFG_Shortcode::MAX_FIELD_LEN ); ?>" required />
+			<input type="text" id="efg-program-name" name="program_name" maxlength="<?php echo esc_attr( EFG_Shortcode::MAX_FIELD_LEN ); ?>" placeholder="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>" required />
 		</div>
 
 		<div id="efg-events">

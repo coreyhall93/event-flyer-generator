@@ -111,7 +111,7 @@ $efg_added = isset( $_GET['efg_added'] ) ? absint( $_GET['efg_added'] ) : 0;
 
 					<div class="efg-field">
 						<label for="efg-picker-name"><?php esc_html_e( 'Flyer headline', 'event-flyer-generator' ); ?></label>
-						<input type="text" id="efg-picker-name" name="program_name" maxlength="<?php echo esc_attr( EFG_Shortcode::MAX_FIELD_LEN ); ?>" value="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>" />
+						<input type="text" id="efg-picker-name" name="program_name" maxlength="<?php echo esc_attr( EFG_Shortcode::MAX_FIELD_LEN ); ?>" placeholder="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>" />
 					</div>
 
 					<div class="efg-field">
