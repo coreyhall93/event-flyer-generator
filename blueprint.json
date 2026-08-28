@@ -32,7 +32,7 @@
 		},
 		{
 			"step": "runPHP",
-			"code": "<?php require_once '/wordpress/wp-load.php'; require_once '/wordpress/wp-content/plugins/event-flyer-generator/demo/seed.php';"
+			"code": "<?php require_once '/wordpress/wp-load.php'; if ( ! defined( 'EFG_PATH' ) ) { echo 'Event Flyer Generator did not load; nothing seeded.'; return; } require_once EFG_PATH . 'demo/seed.php';"
 		}
 	]
 }
