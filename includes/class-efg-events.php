@@ -22,6 +22,9 @@ class EFG_Events {
 
 	const POST_TYPE = 'efg_event';
 
+	/** GatherPress's event post type, used when GatherPress is active. */
+	const GP_POST_TYPE = 'gatherpress_event';
+
 	/**
 	 * Event detail fields, mapped to their post meta keys.
 	 *
@@ -85,22 +88,52 @@ class EFG_Events {
 	}
 
 	/**
-	 * Every event, newest first.
+	 * Whether GatherPress is active and usable as the event source.
+	 *
+	 * @return bool
+	 */
+	public static function using_gatherpress() {
+		return class_exists( '\GatherPress\Core\Event\Event' ) && post_type_exists( self::GP_POST_TYPE );
+	}
+
+	/**
+	 * Which post type events are read from.
+	 *
+	 * @return string
+	 */
+	public static function post_type() {
+		return self::using_gatherpress() ? self::GP_POST_TYPE : self::POST_TYPE;
+	}
+
+	/**
+	 * Every event, soonest first.
+	 *
+	 * Reads GatherPress events when GatherPress is active, and the plugin's own
+	 * events otherwise. Everything downstream is identical either way.
 	 *
 	 * @param int $limit Maximum number to return.
 	 * @return WP_Post[]
 	 */
 	public static function all( $limit = 20 ) {
-		return get_posts(
-			array(
-				'post_type'        => self::POST_TYPE,
-				'post_status'      => 'publish',
-				'numberposts'      => (int) $limit,
-				'orderby'          => 'menu_order date',
-				'order'            => 'ASC',
-				'suppress_filters' => false,
-			)
+		$args = array(
+			'post_type'        => self::post_type(),
+			'post_status'      => 'publish',
+			'numberposts'      => (int) $limit,
+			'suppress_filters' => false,
 		);
+
+		if ( self::using_gatherpress() ) {
+			// GatherPress keeps the start time in post meta, so order by it
+			// rather than by publish date.
+			$args['meta_key'] = 'gatherpress_datetime_start'; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- ordering a short list on a builder screen.
+			$args['orderby']  = 'meta_value';
+			$args['order']    = 'ASC';
+		} else {
+			$args['orderby'] = 'menu_order date';
+			$args['order']   = 'ASC';
+		}
+
+		return get_posts( $args );
 	}
 
 	/**
@@ -180,6 +213,15 @@ class EFG_Events {
 	 * @return int Number of events created.
 	 */
 	public static function seed_demo_content() {
+		if ( self::using_gatherpress() ) {
+			$created = self::seed_gatherpress_events();
+			self::seed_pages();
+			self::clear_demo_clutter();
+			update_option( self::DEMO_OPTION, 1 );
+
+			return $created;
+		}
+
 		$created = 0;
 		$order   = 0;
 
@@ -293,6 +335,116 @@ class EFG_Events {
 	}
 
 	/**
+	 * Seed the same sample events as real GatherPress events and a venue.
+	 *
+	 * Demo helper, so the GatherPress path can be shown rather than described.
+	 * Writes GatherPress's own meta keys and venue taxonomy term; everything is
+	 * then read back through GatherPress's Event API like any other event.
+	 *
+	 * @return int Number of events created.
+	 */
+	private static function seed_gatherpress_events() {
+		$existing = get_posts(
+			array(
+				'post_type'        => self::GP_POST_TYPE,
+				'post_status'      => 'any',
+				'numberposts'      => 1,
+				'fields'           => 'ids',
+				'suppress_filters' => false,
+			)
+		);
+
+		if ( ! empty( $existing ) ) {
+			return 0;
+		}
+
+		$venue_terms = self::seed_gatherpress_venues();
+
+		// Dates are relative so the demo never shows a past programme.
+		$offsets = array( 14, 28, 40, 54, 68, 82 );
+		$times   = array( '19:00:00', '18:30:00', '10:00:00', '19:00:00', '18:00:00', '19:00:00' );
+		$created = 0;
+
+		foreach ( self::demo_events() as $index => $seed ) {
+			$start = gmdate( 'Y-m-d', strtotime( '+' . $offsets[ $index ] . ' days' ) ) . ' ' . $times[ $index ];
+
+			$id = wp_insert_post(
+				array(
+					'post_type'    => self::GP_POST_TYPE,
+					'post_title'   => $seed['title'],
+					'post_excerpt' => $seed['excerpt'],
+					'post_status'  => 'publish',
+				)
+			);
+
+			if ( is_wp_error( $id ) || ! $id ) {
+				continue;
+			}
+
+			foreach ( array( 'datetime_start', 'datetime_start_gmt', 'datetime_end', 'datetime_end_gmt' ) as $key ) {
+				update_post_meta( $id, 'gatherpress_' . $key, $start );
+			}
+			update_post_meta( $id, 'gatherpress_timezone', wp_timezone_string() );
+
+			if ( isset( $venue_terms[ $seed['venue'] ] ) ) {
+				wp_set_object_terms( $id, array( (int) $venue_terms[ $seed['venue'] ] ), '_gatherpress_venue' );
+			}
+
+			++$created;
+		}
+
+		return $created;
+	}
+
+	/**
+	 * Create GatherPress venue posts and their linking terms.
+	 *
+	 * @return array Venue name => term id.
+	 */
+	private static function seed_gatherpress_venues() {
+		$venues = array();
+
+		foreach ( self::demo_events() as $seed ) {
+			$venues[ $seed['venue'] ] = $seed['address'];
+		}
+
+		$terms = array();
+
+		foreach ( $venues as $name => $address ) {
+			$venue_id = wp_insert_post(
+				array(
+					'post_type'   => 'gatherpress_venue',
+					'post_title'  => $name,
+					'post_status' => 'publish',
+				)
+			);
+
+			if ( is_wp_error( $venue_id ) || ! $venue_id ) {
+				continue;
+			}
+
+			// GatherPress reads the address from this single meta key.
+			update_post_meta( $venue_id, 'gatherpress_address', $address );
+
+			// Venue terms carry a leading underscore; that prefix is how
+			// GatherPress tells a real venue from the online-event sentinel.
+			$slug = '_' . get_post_field( 'post_name', $venue_id );
+			$term = term_exists( $slug, '_gatherpress_venue' );
+
+			if ( ! $term ) {
+				$term = wp_insert_term( $name, '_gatherpress_venue', array( 'slug' => $slug ) );
+			}
+
+			if ( ! is_wp_error( $term ) && isset( $term['term_id'] ) ) {
+				wp_set_object_terms( $venue_id, array( (int) $term['term_id'] ), '_gatherpress_venue' );
+				$terms[ $name ] = (int) $term['term_id'];
+			}
+		}
+
+		return $terms;
+	}
+
+	/**
 	 * Create the picker and manual-form pages, and put the picker on the front.
 	 */
 	private static function seed_pages() {
@@ -347,7 +499,15 @@ class EFG_Events {
 	public static function to_flyer_row( $post ) {
 		$post = get_post( $post );
 
-		if ( ! $post || self::POST_TYPE !== $post->post_type ) {
+		if ( ! $post ) {
+			return null;
+		}
+
+		if ( self::GP_POST_TYPE === $post->post_type ) {
+			return self::gatherpress_row( $post );
+		}
+
+		if ( self::POST_TYPE !== $post->post_type ) {
 			return null;
 		}
 
@@ -365,5 +525,35 @@ class EFG_Events {
 		}
 
 		return $row;
+	}
+
+	/**
+	 * Map a GatherPress event onto a flyer row.
+	 *
+	 * Uses GatherPress's own Event API rather than reading its meta directly,
+	 * so timezone handling and venue resolution stay its business.
+	 *
+	 * @param WP_Post $post GatherPress event.
+	 * @return array
+	 */
+	private static function gatherpress_row( $post ) {
+		$event = new \GatherPress\Core\Event\Event( $post->ID );
+		$venue = $event->get_venue_information();
+
+		$excerpt = $post->post_excerpt;
+		if ( '' === trim( $excerpt ) ) {
+			$excerpt = wp_trim_words( wp_strip_all_tags( (string) $post->post_content ), 26, '…' );
+		}
+
+		return array(
+			'title'       => $post->post_title,
+			'description' => $excerpt,
+			// Short, uppercase forms to match the flyer's typographic style.
+			'date'        => strtoupper( $event->get_datetime_start( 'M j' ) ),
+			'time'        => strtoupper( $event->get_datetime_start( 'g:ia' ) ),
+			'venue'       => isset( $venue['name'] ) ? (string) $venue['name'] : '',
+			'address'     => isset( $venue['address'] ) ? (string) $venue['address'] : '',
+			'icon'        => 'people',
+		);
 	}
 }

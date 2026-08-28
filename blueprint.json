@@ -3,7 +3,7 @@
 	"meta": {
 		"title": "Event Flyer Generator Demo",
 		"author": "coreyhall93",
-		"description": "Try the Event Flyer Generator plugin on the Assembler theme, no install required."
+		"description": "Try the Event Flyer Generator with GatherPress: pick events, generate a printable flyer. No install required."
 	},
 	"landingPage": "/",
 	"preferredVersions": {
@@ -19,7 +19,9 @@
 				"ref": "trunk",
 				"path": "assembler"
 			},
-			"options": { "activate": true }
+			"options": {
+				"activate": true
+			}
 		},
 		{
 			"step": "installPlugin",
@@ -28,7 +30,19 @@
 				"url": "https://github.com/coreyhall93/event-flyer-generator",
 				"ref": "master"
 			},
-			"options": { "activate": true }
+			"options": {
+				"activate": true
+			}
+		},
+		{
+			"step": "installPlugin",
+			"pluginData": {
+				"resource": "wordpress.org/plugins",
+				"slug": "gatherpress"
+			},
+			"options": {
+				"activate": true
+			}
 		},
 		{
 			"step": "wp-cli",

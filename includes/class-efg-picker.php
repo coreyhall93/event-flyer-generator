@@ -38,6 +38,13 @@ class EFG_Picker {
 	 * @return bool
 	 */
 	public static function can_add_events() {
+		// When GatherPress is running it owns the events. Adding them here would
+		// be a second, worse place to manage the same thing, so the built-in
+		// form is strictly the no-GatherPress fallback.
+		if ( EFG_Events::using_gatherpress() ) {
+			return false;
+		}
+
 		/**
 		 * Filters who may create events from the front end.
 		 *

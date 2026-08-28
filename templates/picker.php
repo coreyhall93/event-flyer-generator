@@ -10,9 +10,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$efg_events  = EFG_Events::all();
-$efg_max     = EFG_Shortcode::MAX_EVENTS;
-$efg_can_add = EFG_Picker::can_add_events();
+$efg_events      = EFG_Events::all();
+$efg_max         = EFG_Shortcode::MAX_EVENTS;
+$efg_can_add     = EFG_Picker::can_add_events();
+$efg_gatherpress = EFG_Events::using_gatherpress();
 
 // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display-only highlight of the event just created.
 $efg_added = isset( $_GET['efg_added'] ) ? absint( $_GET['efg_added'] ) : 0;
@@ -33,11 +34,20 @@ $efg_icon_options = array(
 
 			<section class="efg-col efg-col--events" aria-labelledby="efg-events-heading">
 				<div class="efg-col-head">
-					<h2 id="efg-events-heading"><?php esc_html_e( 'Your events', 'event-flyer-generator' ); ?></h2>
+					<h2 id="efg-events-heading">
+						<?php esc_html_e( 'Your events', 'event-flyer-generator' ); ?>
+						<?php if ( $efg_gatherpress ) : ?>
+							<span class="efg-source"><?php esc_html_e( 'from GatherPress', 'event-flyer-generator' ); ?></span>
+						<?php endif; ?>
+					</h2>
 					<?php if ( $efg_can_add ) : ?>
 						<button type="button" class="efg-btn efg-btn--ghost" data-efg-add-toggle aria-expanded="false" aria-controls="efg-add-panel">
 							<?php esc_html_e( '+ Add a new event', 'event-flyer-generator' ); ?>
 						</button>
+					<?php elseif ( $efg_gatherpress && current_user_can( 'edit_posts' ) ) : ?>
+						<a class="efg-btn efg-btn--ghost" href="<?php echo esc_url( admin_url( 'post-new.php?post_type=' . EFG_Events::GP_POST_TYPE ) ); ?>">
+							<?php esc_html_e( '+ Add event in GatherPress', 'event-flyer-generator' ); ?>
+						</a>
 					<?php endif; ?>
 				</div>
 
@@ -56,9 +66,13 @@ $efg_icon_options = array(
 				<?php if ( empty( $efg_events ) ) : ?>
 					<p class="efg-empty">
 						<?php
-						echo $efg_can_add
-							? esc_html__( 'No events yet. Add your first one above.', 'event-flyer-generator' )
-							: esc_html__( 'No events yet.', 'event-flyer-generator' );
+						if ( $efg_can_add ) {
+							esc_html_e( 'No events yet. Add your first one above.', 'event-flyer-generator' );
+						} elseif ( $efg_gatherpress ) {
+							esc_html_e( 'No events in GatherPress yet. Create one there and it will show up here.', 'event-flyer-generator' );
+						} else {
+							esc_html_e( 'No events yet.', 'event-flyer-generator' );
+						}
 						?>
 					</p>
 				<?php else : ?>
