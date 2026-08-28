@@ -38,8 +38,28 @@ class EFG_Events {
 	/**
 	 * Hook registration.
 	 */
+	/** Option set by the demo seeder; never set on a normal install. */
+	const DEMO_OPTION = 'efg_demo_mode';
+
+	/**
+	 * Hook registration.
+	 */
 	public function __construct() {
 		add_action( 'init', array( $this, 'register_post_type' ) );
+		add_filter( 'efg_can_add_events', array( $this, 'allow_in_demo' ) );
+	}
+
+	/**
+	 * Let anonymous visitors add events on a seeded demo site only.
+	 *
+	 * The demo is throwaway and the whole point is that people can try the
+	 * flow. Any real install keeps the default capability check.
+	 *
+	 * @param bool $allowed Current decision.
+	 * @return bool
+	 */
+	public function allow_in_demo( $allowed ) {
+		return $allowed || (bool) get_option( self::DEMO_OPTION );
 	}
 
 	/**
@@ -204,8 +224,72 @@ class EFG_Events {
 		}
 
 		self::seed_pages();
+		self::clear_demo_clutter();
+		update_option( self::DEMO_OPTION, 1 );
 
 		return $created;
+	}
+
+	/**
+	 * Strip the stock WordPress/theme furniture that distracts from the demo.
+	 *
+	 * Removes the "Sample Page" (which also takes it out of the nav) and blanks
+	 * the theme's footer template part, whose placeholder address and opening
+	 * hours read as if they belong to the flyer tool.
+	 */
+	private static function clear_demo_clutter() {
+		$sample = get_page_by_path( 'sample-page' );
+		if ( $sample ) {
+			wp_delete_post( $sample->ID, true );
+		}
+
+		$theme = get_stylesheet();
+
+		$existing = get_posts(
+			array(
+				'post_type'        => 'wp_template_part',
+				'name'             => 'footer',
+				'post_status'      => 'any',
+				'numberposts'      => 1,
+				'suppress_filters' => false,
+				'tax_query'        => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- one-off demo setup.
+					array(
+						'taxonomy' => 'wp_theme',
+						'field'    => 'name',
+						'terms'    => $theme,
+					),
+				),
+			)
+		);
+
+		// An empty group keeps the footer slot valid while rendering nothing.
+		$blank = '<!-- wp:group {"layout":{"type":"constrained"}} --><div class="wp-block-group"></div><!-- /wp:group -->';
+
+		if ( ! empty( $existing ) ) {
+			wp_update_post(
+				array(
+					'ID'           => $existing[0]->ID,
+					'post_content' => $blank,
+				)
+			);
+			return;
+		}
+
+		$id = wp_insert_post(
+			array(
+				'post_type'    => 'wp_template_part',
+				'post_name'    => 'footer',
+				'post_title'   => 'Footer',
+				'post_content' => $blank,
+				'post_status'  => 'publish',
+				'tax_input'    => array( 'wp_template_part_area' => array( 'footer' ) ),
+			)
+		);
+
+		if ( $id && ! is_wp_error( $id ) ) {
+			wp_set_object_terms( $id, $theme, 'wp_theme' );
+			wp_set_object_terms( $id, 'footer', 'wp_template_part_area' );
+		}
 	}
 
 	/**

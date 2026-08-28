@@ -78,39 +78,229 @@
 	cursor: pointer;
 }
 
-/* Event picker */
-.efg-picker-intro { margin: 0 0 16px; color: #444; }
-.efg-event-list { list-style: none; margin: 0 0 8px; padding: 0; border-top: 1px solid #ddd; }
+/* ===========================================================
+   One-page flyer builder: events left, flyer right.
+   Black and white, same stance as the flyer it produces.
+   =========================================================== */
+
+.efg-builder {
+	--efg-line: #d8d8d8;
+	--efg-ink: #111;
+	--efg-quiet: #666;
+	max-width: 1080px;
+	margin: 0 auto;
+	color: var(--efg-ink);
+}
+
+.efg-cols {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 340px;
+	gap: 48px;
+	align-items: start;
+}
+
+.efg-col { min-width: 0; }
+
+.efg-col-head {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 16px;
+	padding-bottom: 10px;
+	border-bottom: 2px solid var(--efg-ink);
+}
+
+.efg-builder h2 {
+	margin: 0;
+	font-size: 13px;
+	font-weight: 700;
+	letter-spacing: .12em;
+	text-transform: uppercase;
+}
+
+.efg-col-note {
+	margin: 12px 0 20px;
+	font-size: 14px;
+	color: var(--efg-quiet);
+}
+
+/* --- Event list --- */
+
+.efg-event-list { list-style: none; margin: 0; padding: 0; }
+
 .efg-event-item {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	gap: 16px;
-	padding: 12px 8px;
-	border-bottom: 1px solid #ddd;
+	padding: 14px 0;
+	border-bottom: 1px solid var(--efg-line);
 }
-.efg-event-item.is-picked { background: #f6f6f6; }
-.efg-event-item label { display: flex; align-items: flex-start; gap: 12px; cursor: pointer; flex: 1 1 auto; }
-.efg-event-item input[type="checkbox"] { margin-top: 3px; flex-shrink: 0; }
-.efg-event-item input[type="checkbox"]:disabled { cursor: not-allowed; }
-.efg-event-item input[type="checkbox"]:disabled + .efg-event-meta { opacity: .45; }
-.efg-event-meta { display: flex; flex-direction: column; gap: 2px; }
-.efg-event-name { font-weight: 600; line-height: 1.3; }
-.efg-event-sub { font-size: 14px; color: #555; }
-.efg-single {
-	flex-shrink: 0;
-	background: none;
-	border: 1px solid #ccc;
-	padding: 6px 12px;
-	font-size: 13px;
+
+.efg-event-label {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	flex: 1 1 auto;
 	cursor: pointer;
+	min-width: 0;
+}
+
+.efg-event-label input[type="checkbox"] {
+	margin: 2px 0 0;
+	flex-shrink: 0;
+	width: 18px;
+	height: 18px;
+	accent-color: #000;
+}
+
+/* Print-order badge. Empty until the row is chosen. */
+.efg-order {
+	flex-shrink: 0;
+	width: 22px;
+	height: 22px;
+	line-height: 22px;
+	text-align: center;
+	font-size: 12px;
+	font-weight: 700;
+	border: 1px solid var(--efg-line);
+	color: transparent;
+}
+
+.is-picked .efg-order {
+	background: #000;
+	border-color: #000;
+	color: #fff;
+}
+
+.efg-event-meta { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.efg-event-name { font-weight: 600; line-height: 1.3; }
+.efg-event-sub { font-size: 13px; color: var(--efg-quiet); }
+
+.efg-event-item.is-picked { background: #fafafa; }
+
+.efg-event-item.is-new {
+	animation: efg-flash 1.6s ease-out 1;
+}
+
+@keyframes efg-flash {
+	0%, 40% { background: #f0f0f0; }
+	100% { background: transparent; }
+}
+
+.efg-event-label input:disabled { cursor: not-allowed; }
+.efg-event-label input:disabled ~ .efg-event-meta,
+.efg-event-label input:disabled ~ .efg-order { opacity: .4; }
+
+/* --- Flyer panel --- */
+
+.efg-col--flyer { position: sticky; top: 24px; }
+
+.efg-panel {
+	border: 2px solid var(--efg-ink);
+	padding: 20px;
+}
+
+.efg-panel h2 { padding-bottom: 10px; border-bottom: 1px solid var(--efg-line); }
+
+.efg-count {
+	margin: 14px 0 6px;
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--efg-quiet);
+}
+
+.efg-chosen {
+	list-style: none;
+	margin: 0 0 20px;
+	padding: 0;
+	counter-reset: efg-pick;
+	font-size: 14px;
+}
+
+.efg-chosen li {
+	padding: 5px 0;
+	border-bottom: 1px dotted var(--efg-line);
+	overflow: hidden;
+	text-overflow: ellipsis;
 	white-space: nowrap;
 }
-.efg-single:hover { border-color: #000; }
-.efg-picker-count { min-height: 20px; margin: 0 0 16px; font-size: 14px; color: #555; }
-.efg-empty { color: #555; }
 
-@media (max-width: 600px) {
-	.efg-event-item { flex-direction: column; align-items: stretch; }
-	.efg-single { align-self: flex-start; }
+.efg-chosen li:not(.efg-chosen-empty)::before {
+	counter-increment: efg-pick;
+	content: counter(efg-pick) ". ";
+	font-weight: 700;
+}
+
+.efg-chosen-empty { color: var(--efg-quiet); font-style: italic; border-bottom: 0; }
+
+/* --- Buttons --- */
+
+.efg-btn {
+	font: inherit;
+	cursor: pointer;
+	border: 1px solid var(--efg-ink);
+	background: #fff;
+	color: var(--efg-ink);
+	padding: 8px 14px;
+	font-size: 14px;
+	line-height: 1.2;
+}
+
+.efg-btn:hover { background: #f2f2f2; }
+.efg-btn:focus-visible { outline: 2px solid #000; outline-offset: 2px; }
+
+.efg-btn--primary {
+	width: 100%;
+	background: #000;
+	color: #fff;
+	font-weight: 700;
+	padding: 13px 16px;
+	font-size: 15px;
+}
+
+.efg-btn--primary:hover { background: #222; }
+
+.efg-btn--primary:disabled {
+	background: #e6e6e6;
+	border-color: #e6e6e6;
+	color: #9a9a9a;
+	cursor: not-allowed;
+}
+
+.efg-btn--ghost { font-size: 13px; padding: 6px 12px; }
+
+.efg-btn--quiet {
+	flex-shrink: 0;
+	border-color: var(--efg-line);
+	color: var(--efg-quiet);
+	font-size: 13px;
+	padding: 6px 10px;
+	white-space: nowrap;
+}
+
+.efg-btn--quiet:hover { border-color: var(--efg-ink); color: var(--efg-ink); }
+
+/* --- Add-event panel --- */
+
+.efg-add-panel {
+	margin-top: 36px;
+	border: 2px solid var(--efg-ink);
+	padding: 24px;
+}
+
+.efg-add-panel h2 { margin-bottom: 18px; }
+
+.efg-add-panel .efg-field { margin-bottom: 16px; }
+
+.efg-add-actions { display: flex; gap: 12px; align-items: center; }
+.efg-add-actions .efg-btn--primary { width: auto; }
+
+.efg-empty { color: var(--efg-quiet); }
+
+@media (max-width: 860px) {
+	.efg-cols { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+	.efg-col--flyer { position: static; }
+	.efg-event-item { flex-direction: column; align-items: stretch; gap: 10px; }
+	.efg-btn--quiet { align-self: flex-start; }
 }

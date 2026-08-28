@@ -38,3 +38,6 @@ foreach ( $efg_prefixes as $efg_prefix ) {
 		)
 	);
 }
+
+// Demo flag, set only by the demo seeder.
+delete_option( 'efg_demo_mode' );

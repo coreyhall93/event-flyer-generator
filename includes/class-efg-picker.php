@@ -23,7 +23,100 @@ class EFG_Picker {
 	public function __construct() {
 		add_shortcode( 'event_flyer_picker', array( $this, 'render' ) );
 		add_action( 'template_redirect', array( $this, 'handle_submit' ) );
+		add_action( 'template_redirect', array( $this, 'handle_add_event' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'assets' ) );
+	}
+
+	/**
+	 * Whether the current user may add events.
+	 *
+	 * Generating a flyer from events that already exist is public. CREATING
+	 * events is not: an anonymous write that inserts posts is a spam vector on
+	 * any real site. In the Playground demo the visitor is an admin, so the
+	 * flow is still visible there.
+	 *
+	 * @return bool
+	 */
+	public static function can_add_events() {
+		/**
+		 * Filters who may create events from the front end.
+		 *
+		 * Defaults to users who can already create content. Return true to open
+		 * it up — only sensible on a demo or a trusted intranet, since it lets
+		 * anonymous visitors insert posts.
+		 *
+		 * @param bool $allowed Whether the current user may add events.
+		 */
+		return (bool) apply_filters( 'efg_can_add_events', current_user_can( 'edit_posts' ) );
+	}
+
+	/**
+	 * Create an event from the inline "Add a new event" form.
+	 */
+	public function handle_add_event() {
+		if ( empty( $_POST['efg_add_event'] ) ) {
+			return;
+		}
+
+		if ( ! isset( $_POST['efg_add_nonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['efg_add_nonce'] ) ), 'efg_add_event' ) ) {
+			wp_die(
+				esc_html__( 'Security check failed. Go back and try again.', 'event-flyer-generator' ),
+				'',
+				array( 'back_link' => true )
+			);
+		}
+
+		if ( ! self::can_add_events() ) {
+			wp_die(
+				esc_html__( 'You do not have permission to add events.', 'event-flyer-generator' ),
+				'',
+				array( 'back_link' => true )
+			);
+		}
+
+		$title = sanitize_text_field( wp_unslash( $_POST['new_title'] ?? '' ) );
+
+		if ( '' === $title ) {
+			wp_die(
+				esc_html__( 'An event needs a title.', 'event-flyer-generator' ),
+				'',
+				array( 'back_link' => true )
+			);
+		}
+
+		$id = wp_insert_post(
+			array(
+				'post_type'    => EFG_Events::POST_TYPE,
+				'post_title'   => $title,
+				'post_excerpt' => sanitize_textarea_field( wp_unslash( $_POST['new_description'] ?? '' ) ),
+				'post_status'  => 'publish',
+				'menu_order'   => 100,
+			),
+			true
+		);
+
+		if ( is_wp_error( $id ) ) {
+			wp_die( esc_html( $id->get_error_message() ), '', array( 'back_link' => true ) );
+		}
+
+		$submitted = array(
+			'date'    => sanitize_text_field( wp_unslash( $_POST['new_date'] ?? '' ) ),
+			'time'    => sanitize_text_field( wp_unslash( $_POST['new_time'] ?? '' ) ),
+			'venue'   => sanitize_text_field( wp_unslash( $_POST['new_venue'] ?? '' ) ),
+			'address' => sanitize_text_field( wp_unslash( $_POST['new_address'] ?? '' ) ),
+			'icon'    => sanitize_key( wp_unslash( $_POST['new_icon'] ?? 'tip' ) ),
+		);
+
+		foreach ( EFG_Events::FIELDS as $key => $meta_key ) {
+			update_post_meta( $id, $meta_key, $submitted[ $key ] );
+		}
+
+		// Come back with the new event already ticked, so it is obvious it landed.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified above.
+		$return = wp_validate_redirect( esc_url_raw( wp_unslash( $_POST['efg_return'] ?? '' ) ), home_url( '/' ) );
+
+		wp_safe_redirect( add_query_arg( 'efg_added', $id, $return ) );
+		exit;
 	}
 
 	/**
@@ -40,9 +133,10 @@ class EFG_Picker {
 			'efg-picker',
 			'efgPicker',
 			array(
-				'max'     => EFG_Shortcode::MAX_EVENTS,
-				/* translators: %d: maximum number of events on one flyer. */
-				'tooMany' => sprintf( __( 'Pick up to %d events for one flyer.', 'event-flyer-generator' ), EFG_Shortcode::MAX_EVENTS ),
+				'max'        => EFG_Shortcode::MAX_EVENTS,
+				/* translators: 1: number of events chosen. 2: maximum allowed. */
+				'countLabel' => __( '%1$d of %2$d selected', 'event-flyer-generator' ),
+				'emptyLabel' => __( 'Nothing selected yet.', 'event-flyer-generator' ),
 			)
 		);
 	}
