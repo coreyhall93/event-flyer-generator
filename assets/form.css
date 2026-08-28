@@ -1,0 +1,79 @@
+.efg-wrap {
+	max-width: 640px;
+	font-family: -apple-system, "Inter", sans-serif;
+}
+
+.efg-form fieldset {
+	border: 1px solid #000;
+	padding: 20px;
+	margin-bottom: 20px;
+}
+
+.efg-event--hidden {
+	display: none;
+}
+
+.efg-form legend {
+	font-weight: 700;
+	padding: 0 8px;
+}
+
+.efg-row {
+	display: flex;
+	gap: 16px;
+}
+
+.efg-row .efg-field {
+	flex: 1;
+}
+
+.efg-field {
+	margin-bottom: 14px;
+}
+
+.efg-field label {
+	display: block;
+	font-weight: 600;
+	font-size: 14px;
+	margin-bottom: 4px;
+}
+
+.efg-field input,
+.efg-field textarea,
+.efg-field select {
+	width: 100%;
+	padding: 8px 10px;
+	border: 1px solid #999;
+	font-family: inherit;
+	font-size: 15px;
+}
+
+#efg-add-event,
+.efg-remove-event {
+	background: none;
+	border: 1px solid #000;
+	padding: 8px 16px;
+	font-family: inherit;
+	font-size: 14px;
+	cursor: pointer;
+	margin-bottom: 20px;
+}
+
+.efg-remove-event {
+	margin-top: 8px;
+	margin-bottom: 0;
+	border-color: #999;
+}
+
+.efg-submit {
+	display: block;
+	width: 100%;
+	background: #000;
+	color: #fff;
+	border: none;
+	padding: 14px;
+	font-family: inherit;
+	font-weight: 700;
+	font-size: 16px;
+	cursor: pointer;
+}

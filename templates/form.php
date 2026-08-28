@@ -1,0 +1,87 @@
+<?php
+/**
+ * Front-end flyer-builder form. Included by EFG_Shortcode::render_form().
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+$icon_options = array(
+	'tip'       => __( 'Idea / lightbulb', 'event-flyer-generator' ),
+	'people'    => __( 'People / gathering', 'event-flyer-generator' ),
+	'megaphone' => __( 'Megaphone / announcement', 'event-flyer-generator' ),
+	'pin'       => __( 'Location pin', 'event-flyer-generator' ),
+);
+?>
+<div class="efg-wrap">
+	<form method="post" class="efg-form">
+		<?php wp_nonce_field( 'efg_create_flyer', 'efg_nonce' ); ?>
+
+		<div class="efg-field">
+			<label for="efg-program-name"><?php esc_html_e( 'Program name', 'event-flyer-generator' ); ?></label>
+			<input type="text" id="efg-program-name" name="program_name" value="WordPress Local Connect" required />
+		</div>
+
+		<div id="efg-events">
+			<?php for ( $i = 0; $i < 4; $i++ ) : ?>
+				<fieldset class="efg-event <?php echo $i > 0 ? 'efg-event--hidden' : ''; ?>" data-efg-event="<?php echo esc_attr( $i ); ?>">
+					<legend><?php printf( esc_html__( 'Event %d', 'event-flyer-generator' ), $i + 1 ); ?></legend>
+
+					<div class="efg-row">
+						<div class="efg-field">
+							<label for="efg-date-<?php echo esc_attr( $i ); ?>"><?php esc_html_e( 'Date', 'event-flyer-generator' ); ?></label>
+							<input type="text" id="efg-date-<?php echo esc_attr( $i ); ?>" name="event_date[]" placeholder="OCT 27" />
+						</div>
+						<div class="efg-field">
+							<label for="efg-time-<?php echo esc_attr( $i ); ?>"><?php esc_html_e( 'Time', 'event-flyer-generator' ); ?></label>
+							<input type="text" id="efg-time-<?php echo esc_attr( $i ); ?>" name="event_time[]" placeholder="7PM" />
+						</div>
+						<div class="efg-field">
+							<label for="efg-icon-<?php echo esc_attr( $i ); ?>"><?php esc_html_e( 'Icon', 'event-flyer-generator' ); ?></label>
+							<select id="efg-icon-<?php echo esc_attr( $i ); ?>" name="event_icon[]">
+								<?php foreach ( $icon_options as $key => $label ) : ?>
+									<option value="<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $label ); ?></option>
+								<?php endforeach; ?>
+							</select>
+						</div>
+					</div>
+
+					<div class="efg-field">
+						<label for="efg-title-<?php echo esc_attr( $i ); ?>"><?php esc_html_e( 'Event title', 'event-flyer-generator' ); ?></label>
+						<input type="text" id="efg-title-<?php echo esc_attr( $i ); ?>" name="event_title[]" placeholder="<?php esc_attr_e( 'e.g. Open Source Events with GatherPress', 'event-flyer-generator' ); ?>" />
+					</div>
+
+					<div class="efg-field">
+						<label for="efg-desc-<?php echo esc_attr( $i ); ?>"><?php esc_html_e( 'Description', 'event-flyer-generator' ); ?></label>
+						<textarea id="efg-desc-<?php echo esc_attr( $i ); ?>" name="event_description[]" rows="2"></textarea>
+					</div>
+
+					<div class="efg-row">
+						<div class="efg-field">
+							<label for="efg-venue-<?php echo esc_attr( $i ); ?>"><?php esc_html_e( 'Venue name', 'event-flyer-generator' ); ?></label>
+							<input type="text" id="efg-venue-<?php echo esc_attr( $i ); ?>" name="event_venue[]" />
+						</div>
+						<div class="efg-field">
+							<label for="efg-address-<?php echo esc_attr( $i ); ?>"><?php esc_html_e( 'Address', 'event-flyer-generator' ); ?></label>
+							<input type="text" id="efg-address-<?php echo esc_attr( $i ); ?>" name="event_address[]" />
+						</div>
+					</div>
+
+					<?php if ( $i > 0 ) : ?>
+						<button type="button" class="efg-remove-event"><?php esc_html_e( 'Remove this event', 'event-flyer-generator' ); ?></button>
+					<?php endif; ?>
+				</fieldset>
+			<?php endfor; ?>
+		</div>
+
+		<button type="button" id="efg-add-event"><?php esc_html_e( '+ Add another event (up to 4)', 'event-flyer-generator' ); ?></button>
+
+		<div class="efg-field">
+			<label for="efg-footer"><?php esc_html_e( 'Footer line', 'event-flyer-generator' ); ?></label>
+			<input type="text" id="efg-footer" name="footer_line" value="Open to all &middot; Every skill level" />
+		</div>
+
+		<button type="submit" name="efg_submit" value="1" class="efg-submit"><?php esc_html_e( 'Generate printable flyer', 'event-flyer-generator' ); ?></button>
+	</form>
+</div>
