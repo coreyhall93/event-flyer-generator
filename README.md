@@ -20,8 +20,11 @@ need a quick, consistent flyer without opening Canva or Figma every time.
 - Submitting generates a print-ready flyer page (816×1056, letter size) with a
   "Print / Save as PDF" button — no server-side PDF library, just the
   browser's native print-to-PDF.
-- Flyer data is held in a short-lived WordPress transient (1 hour), not saved
-  permanently anywhere.
+- Flyer data is stored in a WordPress transient for one hour. That means it
+  lives in your site's database (or object cache) for that window, and expired
+  rows can linger until WordPress's daily cleanup runs. It is never attached to
+  a post, a user, or an export. Treat a flyer as public-ish: don't put personal
+  data in one.
 
 ## Installation
 
@@ -53,7 +56,10 @@ need a quick, consistent flyer without opening Canva or Figma every time.
 - Print output forces `print-color-adjust: exact` so background colors (the
   black header band) survive printing — browsers strip backgrounds from
   print output by default.
-- Uninstalling removes every transient the plugin wrote.
+- Uninstalling deletes the plugin's transient rows from the database. On a site
+  with a persistent object cache those entries live in the cache instead and are
+  left to expire on their own TTL, because clearing them would mean flushing the
+  whole site's cache.
 
 ## Changelog
 
@@ -73,6 +79,9 @@ need a quick, consistent flyer without opening Canva or Figma every time.
 ## Development
 
 Not needed to use the plugin — only to work on it.
+
+Requires **PHP 8.1+** for the dev tooling (PHPUnit 10 needs it). The plugin
+itself still runs on PHP 7.4 — CI verifies that separately.
 
 ```bash
 composer install

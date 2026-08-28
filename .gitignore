@@ -1,5 +1,7 @@
 /vendor/
 /node_modules/
+# Multi-agent review output (/counselors runs). Local working notes, not shipped.
+/agents/
 /.phpunit.cache/
 .phpunit.result.cache
 .DS_Store
