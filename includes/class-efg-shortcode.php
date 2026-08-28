@@ -181,7 +181,21 @@ class EFG_Shortcode {
 		$value = (string) $value;
 		$limit = $textarea ? self::MAX_DESC_LEN : self::MAX_FIELD_LEN;
 
-		return function_exists( 'mb_substr' ) ? mb_substr( $value, 0, $limit ) : substr( $value, 0, $limit );
+		$length = function_exists( 'mb_strlen' ) ? mb_strlen( $value ) : strlen( $value );
+		if ( $length <= $limit ) {
+			return $value;
+		}
+
+		// Trim on a word boundary and mark it, so a cap reads as deliberate
+		// rather than looking like the flyer broke mid-sentence.
+		$trimmed = function_exists( 'mb_substr' ) ? mb_substr( $value, 0, $limit - 1 ) : substr( $value, 0, $limit - 1 );
+		$space   = function_exists( 'mb_strrpos' ) ? mb_strrpos( $trimmed, ' ' ) : strrpos( $trimmed, ' ' );
+
+		if ( false !== $space && $space > (int) ( $limit * 0.6 ) ) {
+			$trimmed = function_exists( 'mb_substr' ) ? mb_substr( $trimmed, 0, $space ) : substr( $trimmed, 0, $space );
+		}
+
+		return rtrim( $trimmed, " \t\n\r\0\x0B,;:." ) . '…';
 	}
 
 	/**

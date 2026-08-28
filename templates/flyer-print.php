@@ -73,7 +73,12 @@ $name_parts = explode( ' ', $program_name, 2 );
 			cursor: pointer;
 		}
 
+		/* Every internal dimension is expressed against --efg-scale so the whole
+			flyer can be shrunk to fit one page. The page box itself never scales:
+			it is always exactly US Letter. assets/flyer.js lowers --efg-scale
+			until the content fits, so content is never silently clipped. */
 		.efg-page {
+			--efg-scale: 1;
 			width: 816px;
 			height: 1056px;
 			margin: 0 auto 40px;
@@ -85,38 +90,54 @@ $name_parts = explode( ' ', $program_name, 2 );
 			box-shadow: 0 4px 24px rgba(0,0,0,.25);
 		}
 
-		.efg-header { background: #000; color: #fff; padding: 52px 64px 44px; }
+		.efg-header {
+			background: #000;
+			color: #fff;
+			flex-shrink: 0;
+			padding: calc(52px * var(--efg-scale)) calc(64px * var(--efg-scale)) calc(44px * var(--efg-scale));
+		}
 		.efg-header h1 {
 			margin: 0;
 			font-family: 'Oswald', sans-serif;
 			font-weight: 700;
-			font-size: 72px;
+			font-size: calc(72px * var(--efg-scale));
 			line-height: 1.0;
 			letter-spacing: 0.01em;
 			text-transform: uppercase;
 			text-wrap: balance;
 		}
 
-		.efg-events { flex-grow: 1; display: flex; flex-direction: column; justify-content: space-evenly; padding: 0 64px; }
-		.efg-event-row { display: flex; gap: 32px; align-items: flex-start; }
-		.efg-events > .efg-event-row:not(:last-child) { border-bottom: 1px solid #000; padding-bottom: 24px; margin-bottom: 0; }
+		.efg-events {
+			flex-grow: 1;
+			display: flex;
+			flex-direction: column;
+			justify-content: space-evenly;
+			padding: 0 calc(64px * var(--efg-scale));
+			min-height: 0;
+		}
+		.efg-event-row { display: flex; gap: calc(32px * var(--efg-scale)); align-items: flex-start; }
+		.efg-events > .efg-event-row:not(:last-child) {
+			border-bottom: 1px solid #000;
+			padding-bottom: calc(24px * var(--efg-scale));
+			margin-bottom: 0;
+		}
 
-		.efg-when { width: 120px; flex-shrink: 0; }
-		.efg-when .date { font-family: 'Oswald', sans-serif; font-weight: 600; font-size: 24px; line-height: 1.25; text-transform: uppercase; text-wrap: balance; }
-		.efg-when svg { margin-top: 14px; }
+		.efg-when { width: calc(120px * var(--efg-scale)); flex-shrink: 0; }
+		.efg-when .date { font-family: 'Oswald', sans-serif; font-weight: 600; font-size: calc(24px * var(--efg-scale)); line-height: 1.25; text-transform: uppercase; text-wrap: balance; }
+		.efg-when svg { margin-top: calc(14px * var(--efg-scale)); width: calc(46px * var(--efg-scale)); height: calc(46px * var(--efg-scale)); }
 
-		.efg-what { flex-grow: 1; padding-top: 2px; }
-		.efg-what .title { font-family: 'Oswald', sans-serif; font-weight: 600; font-size: 26px; line-height: 1.15; text-transform: uppercase; text-wrap: balance; margin-bottom: 10px; }
-		.efg-what .desc { font-size: 17px; line-height: 1.5; text-wrap: pretty; max-width: 400px; }
+		.efg-what { flex-grow: 1; padding-top: calc(2px * var(--efg-scale)); min-width: 0; }
+		.efg-what .title { font-family: 'Oswald', sans-serif; font-weight: 600; font-size: calc(26px * var(--efg-scale)); line-height: 1.15; text-transform: uppercase; text-wrap: balance; margin-bottom: calc(10px * var(--efg-scale)); }
+		.efg-what .desc { font-size: calc(17px * var(--efg-scale)); line-height: 1.5; text-wrap: pretty; max-width: calc(400px * var(--efg-scale)); }
 
-		.efg-where { width: 190px; flex-shrink: 0; text-align: right; padding-top: 2px; }
-		.efg-where svg { margin-bottom: 8px; }
-		.efg-where .venue { font-weight: 700; font-size: 16px; line-height: 1.4; }
-		.efg-where .address { font-size: 15px; line-height: 1.4; }
+		.efg-where { width: calc(190px * var(--efg-scale)); flex-shrink: 0; text-align: right; padding-top: calc(2px * var(--efg-scale)); }
+		.efg-where svg { margin-bottom: calc(8px * var(--efg-scale)); width: calc(30px * var(--efg-scale)); height: calc(30px * var(--efg-scale)); }
+		.efg-where .venue { font-weight: 700; font-size: calc(16px * var(--efg-scale)); line-height: 1.4; }
+		.efg-where .address { font-size: calc(15px * var(--efg-scale)); line-height: 1.4; }
 
-		.efg-footer { padding: 0 64px 48px; text-align: center; }
-		.efg-footer .rule { border-top: 1px solid #000; margin-bottom: 20px; }
-		.efg-footer .line { font-family: 'Oswald', sans-serif; font-weight: 600; font-size: 17px; letter-spacing: 0.08em; text-transform: uppercase; text-wrap: balance; }
+		.efg-footer { flex-shrink: 0; padding: 0 calc(64px * var(--efg-scale)) calc(48px * var(--efg-scale)); text-align: center; }
+		.efg-footer .rule { border-top: 1px solid #000; margin-bottom: calc(20px * var(--efg-scale)); }
+		.efg-footer .line { font-family: 'Oswald', sans-serif; font-weight: 600; font-size: calc(17px * var(--efg-scale)); letter-spacing: 0.08em; text-transform: uppercase; text-wrap: balance; }
 
 		@page { size: letter; margin: 0; }
 		@media print {
@@ -135,7 +156,7 @@ $name_parts = explode( ' ', $program_name, 2 );
 
 	<div class="efg-toolbar">
 		<a href="<?php echo esc_url( remove_query_arg( 'efg_flyer' ) ); ?>">&larr; <?php esc_html_e( 'Back to form', 'event-flyer-generator' ); ?></a>
-		<button type="button" onclick="window.print()"><?php esc_html_e( 'Print / Save as PDF', 'event-flyer-generator' ); ?></button>
+		<button type="button" data-efg-print><?php esc_html_e( 'Print / Save as PDF', 'event-flyer-generator' ); ?></button>
 	</div>
 
 	<div class="efg-page">
@@ -185,5 +206,7 @@ $name_parts = explode( ' ', $program_name, 2 );
 
 	</div>
 
+	<?php // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedScript -- this template bypasses the theme and wp_head() entirely, so there is no enqueue pipeline to hook into. ?>
+	<script src="<?php echo esc_url( EFG_URL . 'assets/flyer.js?ver=' . EFG_VERSION ); ?>"></script>
 </body>
 </html>
