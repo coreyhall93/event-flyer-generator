@@ -1,9 +1,9 @@
 {
 	"$schema": "https://playground.wordpress.net/blueprint-schema.json",
 	"meta": {
-		"title": "Event Flyer Generator \u2014 with GatherPress",
+		"title": "Event Flyer Generator \u2014 standalone",
 		"author": "coreyhall93",
-		"description": "Try the Event Flyer Generator with GatherPress: pick events, generate a printable flyer. No install required."
+		"description": "Add your own events and generate a printable flyer. No GatherPress, no design tools."
 	},
 	"landingPage": "/",
 	"preferredVersions": {
@@ -29,16 +29,6 @@
 				"resource": "git:directory",
 				"url": "https://github.com/coreyhall93/event-flyer-generator",
 				"ref": "master"
-			},
-			"options": {
-				"activate": true
-			}
-		},
-		{
-			"step": "installPlugin",
-			"pluginData": {
-				"resource": "wordpress.org/plugins",
-				"slug": "gatherpress"
 			},
 			"options": {
 				"activate": true

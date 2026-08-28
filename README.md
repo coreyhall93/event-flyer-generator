@@ -15,9 +15,18 @@ its own lightweight event type, and you can add events inline.
 
 ## Try it live
 
-**[Open the demo in WordPress Playground](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/coreyhall93/event-flyer-generator/master/blueprint.json)** — boots a throwaway WordPress site in your browser with this plugin, GatherPress, and six sample events already set up. Nothing to install, nothing persists.
+Two demos, matching the two ways this works. Both boot a throwaway WordPress in
+your browser. Nothing to install, nothing persists.
 
-It runs the exact code on this repository's `master` branch, so what you try
+**1. [Standalone](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/coreyhall93/event-flyer-generator/master/blueprint-standalone.json)**
+— no GatherPress. Add your own events right in the builder, then make a flyer.
+This is the plugin on its own.
+
+**2. [With GatherPress](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/coreyhall93/event-flyer-generator/master/blueprint.json)**
+— GatherPress installed with six sample events. The builder reads them, so you
+never retype an event you already have.
+
+Both run the exact code on this repository's `master` branch, so what you try
 there is what you get when you install it.
 
 ## What it does
