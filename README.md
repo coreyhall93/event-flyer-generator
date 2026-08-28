@@ -1,5 +1,7 @@
 # Event Flyer Generator
 
+[![CI](https://github.com/coreyhall93/event-flyer-generator/actions/workflows/ci.yml/badge.svg)](https://github.com/coreyhall93/event-flyer-generator/actions/workflows/ci.yml)
+
 A small WordPress plugin that lets anyone fill out a front-end form and get a
 printable, one-page flyer for 1-4 upcoming events — no design tools required.
 
@@ -67,6 +69,20 @@ need a quick, consistent flyer without opening Canva or Figma every time.
 
 ### 1.0.0
 - Initial release.
+
+## Development
+
+Not needed to use the plugin — only to work on it.
+
+```bash
+composer install
+composer run test   # PHPUnit
+composer run lint   # PHPCS, WordPress coding standards
+composer run lint:fix
+```
+
+CI runs the linter, the test suite on PHP 8.1 through 8.4, and parses every
+shipped file on PHP 7.4 to verify the `Requires PHP` header.
 
 ## License
 
